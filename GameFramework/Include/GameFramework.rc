@@ -1,0 +1,160 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// 한국어(대한민국) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_KOR)
+LANGUAGE LANG_KOREAN, SUBLANG_DEFAULT
+#pragma code_page(949)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON1               ICON                    "icon1.ico"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DIALOG_EDITOR DIALOGEX 0, 0, 375, 318
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "확인",IDOK,151,297,50,14
+    PUSHBUTTON      "취소",IDCANCEL,233,297,50,14
+    LTEXT           "타일가로개수",IDC_STATIC,7,7,53,15,SS_CENTERIMAGE | WS_BORDER,WS_EX_RIGHT
+    LTEXT           "타일세로개수",IDC_STATIC,7,29,53,15,SS_CENTERIMAGE | WS_BORDER,WS_EX_RIGHT
+    EDITTEXT        IDC_EDIT_TILECOUNTX,67,7,75,15,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDIT_TILECOUNTY,67,29,75,15,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "타일가로크기",IDC_STATIC,148,7,53,15,SS_CENTERIMAGE | WS_BORDER,WS_EX_RIGHT
+    LTEXT           "타일세로크기",IDC_STATIC,148,29,53,15,SS_CENTERIMAGE | WS_BORDER,WS_EX_RIGHT
+    EDITTEXT        IDC_EDIT_TILESIZEX,208,7,75,15,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDIT_TILESIZEY,208,29,75,15,ES_AUTOHSCROLL | ES_NUMBER
+    PUSHBUTTON      "맵생성",IDC_BUTTON_CREATEMAP,292,7,76,37
+    PUSHBUTTON      "타일이미지 불러오기",IDC_BUTTON_TILETEXTURELOAD,108,50,85,42
+    LISTBOX         IDC_LIST_TILETEXTURE,7,50,98,117,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "타일이미지 선택",IDC_BUTTON_SETTEXTURE,108,96,85,42
+    RTEXT           "타일 편집",IDC_STATIC,7,174,38,17,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_EDITMODE,54,174,76,48,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "타일 옵션",IDC_STATIC,7,194,38,17,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_TILEOPTION,54,194,76,48,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_LIST_TEXTUREFRAME,321,50,47,115,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "시작프레임",IDC_STATIC,201,50,45,15,SS_CENTERIMAGE | WS_BORDER,WS_EX_RIGHT
+    LTEXT           "끝프레임",IDC_STATIC,201,72,44,15,SS_CENTERIMAGE | WS_BORDER,WS_EX_RIGHT
+    EDITTEXT        IDC_EDIT_STARTFRAMEX,250,50,33,15,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDIT_STARTFRAMEY,285,50,33,15,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDIT_ENDFRAMEX,250,71,33,15,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDIT_ENDFRAMEY,285,71,33,15,ES_AUTOHSCROLL | ES_NUMBER
+    PUSHBUTTON      "프레임 추가",IDC_BUTTON_ADDFRAME,201,91,59,20
+    PUSHBUTTON      "프레임 제거",IDC_BUTTON_DELETEFRAME,261,91,59,20
+    PUSHBUTTON      "프레임 수정",IDC_BUTTON_MODIFYFRAME,201,115,59,20
+    PUSHBUTTON      "저장하기",IDC_BUTTON_SAVE,142,174,59,33
+    PUSHBUTTON      "불러오기",IDC_BUTTON_LOAD,208,174,59,33
+    PUSHBUTTON      "이미지 모두 지우기",IDC_BUTTON_IMAGECLEAR,108,142,85,24
+    CONTROL         "Tile Side Collision",IDC_CHECK_SIDECOLLISION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,214,71,16
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_DIALOG_EDITOR, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 368
+        VERTGUIDE, 60
+        VERTGUIDE, 67
+        VERTGUIDE, 142
+        VERTGUIDE, 148
+        VERTGUIDE, 201
+        VERTGUIDE, 208
+        VERTGUIDE, 233
+        VERTGUIDE, 283
+        VERTGUIDE, 292
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 311
+        HORZGUIDE, 22
+        HORZGUIDE, 29
+        HORZGUIDE, 44
+        HORZGUIDE, 50
+        HORZGUIDE, 174
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_DIALOG_EDITOR AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+#endif    // 한국어(대한민국) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
