@@ -73,7 +73,7 @@ void CPlayer::Start()
 	CInput::GetInst()->SetCallback<CPlayer>("MoveRight", KeyState_Up,
 		this, &CPlayer::RightMoveButtonUp);
 
-		CInput::GetInst()->SetCallback<CPlayer>("MoveDashRight", KeyState_Push,
+		CInput::GetInst()->SetCallback<CPlayer>("MoveDashRight", KeyState_Push, //
 		this, &CPlayer::MoveDashRight);
 
 	CInput::GetInst()->SetCallback<CPlayer>("Fire", KeyState_Down,
