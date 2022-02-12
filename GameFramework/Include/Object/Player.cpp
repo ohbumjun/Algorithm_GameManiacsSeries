@@ -27,9 +27,14 @@ CPlayer::CPlayer()	:
 	m_ButtonMaxMoveVelocity = 200.f;
 	m_MoveMaxVelocity = m_LeverMaxMoveVelocity + m_ButtonMaxMoveVelocity;
 
+	m_DashTwiceLimitTime = 0.2f;
 
 	m_IsLeverMoving = false;
 	m_IsButtonMoving = false;
+
+	m_IsSwimmingUp = false;
+	m_SwimSpeed = 200.f;
+	m_NoSwimDownSpeed = 100.;
 	
 }
 
@@ -48,11 +53,11 @@ void CPlayer::Start()
 {
 	CCharacter::Start();
 
-	// CInput::GetInst()->SetCallback<CPlayer>("MoveUp", KeyState_Push,
-		// this, &CPlayer::MoveUp);
+	CInput::GetInst()->SetCallback<CPlayer>("MoveUp", KeyState_Push,
+		this, &CPlayer::MoveUp);
 
-	// CInput::GetInst()->SetCallback<CPlayer>("MoveDown", KeyState_Push,
-		// this, &CPlayer::MoveDown);
+	CInput::GetInst()->SetCallback<CPlayer>("MoveDown", KeyState_Push,
+		this, &CPlayer::MoveDown);
 
 	CInput::GetInst()->SetCallback<CPlayer>("MoveLeft", KeyState_Push,
 		this, &CPlayer::MoveLeft);
@@ -152,6 +157,7 @@ bool CPlayer::Init()
 	m_CharacterInfo.HPMax = 1000;
 
 	// SetGravityAccel(30.f);
+	// SetPhysicsSimulate(false);
 	SetPhysicsSimulate(true);
 	SetJumpVelocity(70.f);
 	SetSideWallCheck(true);
@@ -196,65 +202,7 @@ void CPlayer::Update(float DeltaTime)
 	else
 		SetOffset(0.f, 0.f);
 
-	// 레버 움직임 --> 현재 움직이지 않고 있는 상황이라면 --> 자연 감속을 시켜줘야 한다.
-	// 최대 움직임 제한
-	if (m_MoveVelocity >= m_MoveMaxVelocity)
-		m_MoveVelocity = m_MoveMaxVelocity;
-
-	if (!m_IsLeverMoving)
-	{
-		// 감속 d
-		m_LeverVelocity -= m_LeverMoveAccel * 0.5f;
-
-		if (m_LeverVelocity < 0.f)
-		{
-			m_LeverVelocity = 0.f;
-		}
-	}
-
-	if (!m_IsButtonMoving)
-	{
-		// 감속 d
-		m_ButtonVelocity -= m_ButtonMoveAccel * 0.5f;
-
-		if (m_ButtonVelocity < 0.f)
-		{
-			m_ButtonVelocity = 0.f;
-		}
-	}
-
-	
-	if (!m_IsLeverMoving && !m_IsButtonMoving && m_MoveVelocity > 0.f)
-	{
-		// 감속 d
-		m_MoveVelocity = m_LeverVelocity + m_ButtonVelocity;
-
-		// 이동을 멈추면, 오른쪽, 왼쪽 이동 표시를 취소해준다.
-		if (m_MoveVelocity <= 0.1f)
-		{
-			if (m_RightMove)
-			{
-				m_RightMove = false;
-				// m_ToLeftWhenRightMove = false;
-				m_ToRightWhenLeftMove = false;
-				
-			}
-			if (m_LeftMove)
-			{
-				m_LeftMove = false;
-				m_ToLeftWhenRightMove = false;
-			}
-
-			m_MoveVelocity = 0.f;
-		}
-
-		// 감속 중임에도 이동은 시켜준다.
-		if (m_RightMove)
-			Move(Vector2(1.f, 0.f), m_MoveVelocity);
-		if (m_LeftMove)
-			Move(Vector2(-1.f, 0.f), m_MoveVelocity);
-
-	}
+	PlayerMoveUpdate(DeltaTime);
 
 }
 
@@ -317,6 +265,20 @@ void CPlayer::MoveDown(float DeltaTime)
 }
 
 
+void CPlayer::SwimMoveUp(float DeltaTime)
+{
+	//m_Pos.y -= 200.f * DeltaTime;
+	Move(Vector2(0.f, -1.f));
+	ChangeAnimation("LucidNunNaRightWalk");
+}
+
+void CPlayer::NoSwimGoDown(float DeltaTime)
+{
+	Move(Vector2(0.f, 1.f));
+	ChangeAnimation("LucidNunNaRightWalk");
+}
+
+
 void CPlayer::BulletFire(float DeltaTime)
 {
 	ChangeAnimation("LucidNunNaRightAttack");
@@ -350,7 +312,9 @@ void CPlayer::JumpKey(float DeltaTime)
 
 float CPlayer::CalculateLeverMoveSpeed(float DeltaTime)
 {
-
+	if (!m_IsGround)
+		return m_LeverVelocity;
+		
 	// 오른쪽 이동 중이라면
 	if (m_RightMove)
 	{
@@ -396,6 +360,9 @@ float CPlayer::CalculateLeverMoveSpeed(float DeltaTime)
 
 float CPlayer::CalculateButtonMoveSpeed(float DeltaTime)
 {
+	if (!m_IsGround)
+		return m_LeverVelocity;
+
 	// 오른쪽 이동 중이라면
 	if (m_RightMove)
 	{
@@ -623,7 +590,70 @@ void CPlayer::RightDashMoveEnd(float DeltaTime)
 void CPlayer::LeftDashMoveEnd(float DeltaTime)
 {
 	m_LeftMovePush = false;
-	MoveInfoReset();//
+	MoveInfoReset();
+}
+
+void CPlayer::PlayerMoveUpdate(float DeltaTime)
+{
+	// 레버 움직임 --> 현재 움직이지 않고 있는 상황이라면 --> 자연 감속을 시켜줘야 한다.
+	// 최대 움직임 제한
+	if (m_MoveVelocity >= m_MoveMaxVelocity)
+		m_MoveVelocity = m_MoveMaxVelocity;
+
+	if (!m_IsLeverMoving)
+	{
+		// 감속 d
+		m_LeverVelocity -= m_LeverMoveAccel * 0.5f;
+
+		if (m_LeverVelocity < 0.f)
+		{
+			m_LeverVelocity = 0.f;
+		}
+	}
+
+	if (!m_IsButtonMoving)
+	{
+		// 감속 d
+		m_ButtonVelocity -= m_ButtonMoveAccel * 0.5f;
+
+		if (m_ButtonVelocity < 0.f)
+		{
+			m_ButtonVelocity = 0.f;
+		}
+	}
+
+
+	if (!m_IsLeverMoving && !m_IsButtonMoving && m_MoveVelocity > 0.f)
+	{
+		// 감속 d
+		m_MoveVelocity = m_LeverVelocity + m_ButtonVelocity;
+
+		// 이동을 멈추면, 오른쪽, 왼쪽 이동 표시를 취소해준다.
+		if (m_MoveVelocity <= 0.1f)
+		{
+			if (m_RightMove)
+			{
+				m_RightMove = false;
+				// m_ToLeftWhenRightMove = false;
+				m_ToRightWhenLeftMove = false;
+
+			}
+			if (m_LeftMove)
+			{
+				m_LeftMove = false;
+				m_ToLeftWhenRightMove = false;
+			}
+
+			m_MoveVelocity = 0.f;
+		}
+
+		// 감속 중임에도 이동은 시켜준다.
+		if (m_RightMove)
+			Move(Vector2(1.f, 0.f), m_MoveVelocity);
+		if (m_LeftMove)
+			Move(Vector2(-1.f, 0.f), m_MoveVelocity);
+
+	}
 }
 
 void CPlayer::LeftLeverMoveEnd(float DeltaTime)

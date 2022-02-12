@@ -17,7 +17,7 @@ protected:
 	std::list<CSharedPtr<CBullet>>	m_Skill1BulletList;
 	CSharedPtr<CWidgetComponent>	m_HPBarWidget;
 	CSharedPtr<CWidgetComponent>	m_NameWidget;
-
+private : // LeverMove, DashMove
 	// 레버 속도 프로그램
 	float m_MoveVelocity;
 	float m_MoveMaxVelocity;
@@ -29,6 +29,7 @@ protected:
 	float m_ButtonMoveAccel;
 	float m_ButtonVelocity;
 	float m_ButtonMaxMoveVelocity;
+	float m_DashTwiceLimitTime;
 
 	bool m_RightMove;
 	bool m_ToLeftWhenRightMove;
@@ -40,6 +41,12 @@ protected:
 
 	bool m_IsLeverMoving;
 	bool m_IsButtonMoving;
+
+private : // Swim
+	bool m_IsSwimmingUp;
+	float m_SwimSpeed;
+	float m_NoSwimDownSpeed;
+
 
 public:
 	virtual void SetAttackSpeed(float Speed)
@@ -68,6 +75,10 @@ private:
 	void RightDashMoveEnd(float DeltaTime);
 	void LeftLeverMoveEnd(float DeltaTime);
 	void LeftDashMoveEnd(float DeltaTime);
+	void PlayerMoveUpdate(float DeltaTime);
+private : // Swim;
+	void SwimMoveUp(float DeltaTime);
+	void NoSwimGoDown(float DeltaTime);
 private :
 	void MoveUp(float DeltaTime);
 	void MoveDown(float DeltaTime);
