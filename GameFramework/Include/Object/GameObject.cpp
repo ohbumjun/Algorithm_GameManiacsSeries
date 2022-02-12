@@ -29,6 +29,10 @@ CGameObject::CGameObject()	:
 	m_SideWallCheck(false)
 {
 	m_PrevPos.y = -1.f;
+
+	// Jump
+	m_JumpAccel = 1.5f;
+	m_JumpAccelAccTime = 0.f;
 }
 
 CGameObject::CGameObject(const CGameObject& obj)	:
@@ -351,12 +355,15 @@ void CGameObject::Update(float DeltaTime)
 		// (-b +- ·çÆ®(b^2 - 4ac) / 2a
 		float	Velocity = 0.f;
 
+		m_JumpAccelAccTime += m_JumpAccel;
+
 		if (m_Jump)
 			Velocity = m_JumpVelocity * m_FallTime;
 
 		float	SaveY = m_Pos.y;
 
-		m_Pos.y = m_FallStartY - (Velocity - 0.5f * GRAVITY * m_FallTime * m_FallTime);
+		// m_Pos.y = m_FallStartY - (Velocity - 0.5f * GRAVITY * m_FallTime * m_FallTime);
+		m_Pos.y = m_FallStartY - (Velocity - 0.5f * GRAVITY * m_FallTime * m_FallTime * m_JumpAccel);
 	}
 
 
@@ -641,6 +648,7 @@ void CGameObject::PostUpdate(float DeltaTime)
 					m_Pos.y = TileMap->GetTile(j, i)->GetPos().y - (1.f - m_Pivot.y) * m_Size.y;
 					m_IsGround = true;
 					m_Jump = false;
+					m_JumpAccelAccTime = 0.f;
 					break;
 				}
 			}

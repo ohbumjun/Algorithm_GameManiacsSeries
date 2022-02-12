@@ -31,10 +31,11 @@ CPlayer::CPlayer()	:
 
 	m_IsLeverMoving = false;
 	m_IsButtonMoving = false;
-
+	
 	m_IsSwimmingUp = false;
 	m_SwimSpeed = 200.f;
 	m_NoSwimDownSpeed = 100.;
+
 	
 }
 
@@ -163,8 +164,8 @@ bool CPlayer::Init()
 	m_CharacterInfo.HPMax = 1000;
 
 	// SetGravityAccel(30.f);
-	SetPhysicsSimulate(false);
-	// SetPhysicsSimulate(true);
+	// SetPhysicsSimulate(false);
+	SetPhysicsSimulate(true);
 	SetJumpVelocity(70.f);
 	SetSideWallCheck(true);
 
@@ -209,7 +210,7 @@ void CPlayer::Update(float DeltaTime)
 		SetOffset(0.f, 0.f);
 
 	PlayerMoveUpdate(DeltaTime);
-	SwimMoveUpdate(DeltaTime);
+	// SwimMoveUpdate(DeltaTime);
 
 }
 

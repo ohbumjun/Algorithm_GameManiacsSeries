@@ -41,10 +41,13 @@ protected:
 	bool			m_IsGround;
 	float			m_FallTime;
 	float			m_FallStartY;
-	bool			m_Jump;
-	float			m_JumpVelocity;
 	bool			m_FloorCheck;
 	bool			m_SideWallCheck;
+private : // Jum;
+	bool			m_Jump;
+	float			m_JumpVelocity;
+	float          m_JumpAccel;
+	float          m_JumpAccelAccTime;
 
 public:
 	void SetSideWallCheck(bool Check)
