@@ -86,14 +86,18 @@ bool CMainScene::Init()
 
 	CScrollMap* Map = CreateMap<CScrollMap>("ScrollMap");
 
-	float	ScrollWidth = 1500.f - GetCamera()->GetResolution().x;
+	// 해상도를 빼줄 것이다.
+	float	ScrollWidth = 1500.f - GetCamera()->GetResolution().x; // Scroll Map Texture 기준
 	float	ScrollHeight = 1200.f - GetCamera()->GetResolution().y;
 
-	float	TileMapWidth = 3000.f - GetCamera()->GetResolution().x;
+	float	TileMapWidth = 3000.f - GetCamera()->GetResolution().x; // World Map 기준
 	float	TileMapHeight = 1200.f - GetCamera()->GetResolution().y;
 
 	Map->SetSize(1280.f, 720.f);
 	Map->SetTexture("ScrollBack", TEXT("Sky.bmp"));
+
+	// 100 / 1000 --> 0.1 이라고 한다면, Scroll Ratio는  0.1이 될 것이다.
+	// 즉, 카메라가 100m 이동할 때, 실제 Scroll Map 상에서는 10m만 이동한 형태를 띄게 되는 것이다.
 	Map->SetScrollRatio(ScrollWidth / TileMapWidth, ScrollHeight / TileMapHeight);
 	Map->SetZOrder(0);
 

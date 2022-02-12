@@ -59,7 +59,8 @@ void CScrollMap::Start()
 
 bool CScrollMap::Init()
 {
-	CMapBase::Init();
+	if (!CMapBase::Init())
+		return false;
 
 	return true;
 }
@@ -89,22 +90,33 @@ void CScrollMap::Render(HDC hDC)
 		{
 			CCamera* Camera = m_Scene->GetCamera();
 
+			// 해상도 가져오고 
 			Vector2 Resolution = Camera->GetResolution();
 
+			// Scroll Ratio 을 가져온다.
+			// ex) 예를 들어, 카메라가 100m 오른쪽 이동 --> 실제 해당 Map 상에서는 30m만 오른쪽 이동
+			// 이를 통해 원근 감 구현이 가능하다.
 			Vector2	ImagePos = Camera->GetPos() * m_ScrollRatio;
 
 			unsigned int	Width = m_ScrollTexture->GetWidth();
 			unsigned int	Height = m_ScrollTexture->GetHeight();
 
+			// 범위 조정 
 			ImagePos.x = ImagePos.x < 0.f ? 0.f : ImagePos.x;
+
+			// 오른쪽 끝 이상으로 나아가지는 않게 세팅한다.
 			ImagePos.x = ImagePos.x + Resolution.x > Width ? Width - Resolution.x : ImagePos.x;
 
 			ImagePos.y = ImagePos.y < 0.f ? 0.f : ImagePos.y;
+
+			// 마찬가지로, 아래 끝까지 나아가지는 않게 세팅한다.
 			ImagePos.y = ImagePos.y + Resolution.y > Height ? Height - Resolution.y : ImagePos.y;
 
+			// 그러면, 해당 위치부터 Render를 할 것이다.
 			m_ScrollTexture->Render(hDC, m_Pos, ImagePos, m_Size);
 		}
 
+		// 만약 Loop 라면, Image Pos 이전에 잘린 위치를, 오른쪽에 붙여서 Render 할 것이다.
 		else
 		{
 			CCamera* Camera = m_Scene->GetCamera();

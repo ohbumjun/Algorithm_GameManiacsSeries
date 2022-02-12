@@ -20,7 +20,7 @@ void CMapBase::Start()
 
 bool CMapBase::Init()
 {
-	return false;
+	return true;
 }
 
 void CMapBase::Update(float DeltaTime)

@@ -31,7 +31,7 @@ CGameObject::CGameObject()	:
 	m_PrevPos.y = -1.f;
 
 	// Jump
-	m_JumpAccel = 1.5f;
+	m_JumpAccel = 1.1f;
 	m_JumpAccelAccTime = 0.f;
 }
 
