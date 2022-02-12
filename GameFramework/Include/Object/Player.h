@@ -59,8 +59,8 @@ public:
 	virtual float SetDamage(float Damage);
 
 private:
-	void CalculateLeftDir();
-	void CalculateRightDir();
+	bool CalculateLeftDir();
+	bool CalculateRightDir();
 private :
 	void MoveUp(float DeltaTime);
 	void MoveDown(float DeltaTime);
@@ -75,9 +75,9 @@ private :
 	void Skill1(float DeltaTime);
 	void JumpKey(float DeltaTime);
 private :
-	void CalculateLevelMoveSpeed(float DeltaTime);
-	void CalculateButtonMoveSpeed(float DeltaTime);
-	void CalculateTotalMoveSpeed(float DeltaTime);
+	float CalculateLeverMoveSpeed(float DeltaTime);
+	float CalculateButtonMoveSpeed(float DeltaTime);
+	float CalculateTotalMoveSpeed();
 	void RightMoveButtonUp(float DeltaTime);
 	void LeftMoveButtonUp(float DeltaTime);
 	void MoveInfoReset();
