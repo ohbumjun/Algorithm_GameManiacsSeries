@@ -142,6 +142,8 @@ bool CInput::Init(HWND hWnd)
 	SetCtrlKey("MoveDashRight", true);
 
 	CreateKey("Jump", VK_SPACE);
+	CreateKey("JumpWhileDash", VK_SPACE);
+	SetCtrlKey("JumpWhileDash", true);
 	CreateKey("Fire", VK_LBUTTON);
 	//SetCtrlKey("Fire", true);
 	

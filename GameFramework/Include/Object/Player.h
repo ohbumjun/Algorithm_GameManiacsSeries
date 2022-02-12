@@ -38,7 +38,8 @@ protected:
 	bool m_ToRightWhenLeftMove;
 	bool m_LeftMovePush;
 
-	bool m_IsMoving;
+	bool m_IsLeverMoving;
+	bool m_IsButtonMoving;
 
 public:
 	virtual void SetAttackSpeed(float Speed)
@@ -59,15 +60,17 @@ public:
 	virtual float SetDamage(float Damage);
 
 private:
-	bool CalculateLeftDir();
-	bool CalculateRightDir();
-private :
-	void MoveUp(float DeltaTime);
-	void MoveDown(float DeltaTime);
 	void MoveLeft(float DeltaTime);
 	void MoveDashLeft(float DeltaTime);
 	void MoveRight(float DeltaTime);
 	void MoveDashRight(float DeltaTime);
+	void RightLeverMoveEnd(float DeltaTime);
+	void RightDashMoveEnd(float DeltaTime);
+	void LeftLeverMoveEnd(float DeltaTime);
+	void LeftDashMoveEnd(float DeltaTime);
+private :
+	void MoveUp(float DeltaTime);
+	void MoveDown(float DeltaTime);
 private :
 	void BulletFire(float DeltaTime);
 	void Pause(float DeltaTime);
@@ -78,8 +81,6 @@ private :
 	float CalculateLeverMoveSpeed(float DeltaTime);
 	float CalculateButtonMoveSpeed(float DeltaTime);
 	float CalculateTotalMoveSpeed();
-	void RightMoveButtonUp(float DeltaTime);
-	void LeftMoveButtonUp(float DeltaTime);
 	void MoveInfoReset();
 public:
 	void AttackEnd();

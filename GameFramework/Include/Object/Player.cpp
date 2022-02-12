@@ -17,16 +17,19 @@ CPlayer::CPlayer()	:
 	m_RightMovePush(false),
 	m_LeftMove(false),
 	m_ToRightWhenLeftMove(false),
-	m_LeftMovePush(false),
-	m_IsMoving(false)
+	m_LeftMovePush(false)
 {
 	m_LeverMoveAccel = 1.f;
 	m_ButtonMoveAccel = 1.5f;
 	m_MoveVelocity = 0.f;
 
-	m_MoveMaxVelocity = 500.f;
-	m_LeverMaxMoveVelocity  = 300.f;
+	m_LeverMaxMoveVelocity  = 250.f;
 	m_ButtonMaxMoveVelocity = 200.f;
+	m_MoveMaxVelocity = m_LeverMaxMoveVelocity + m_ButtonMaxMoveVelocity;
+
+
+	m_IsLeverMoving = false;
+	m_IsButtonMoving = false;
 	
 }
 
@@ -58,10 +61,10 @@ void CPlayer::Start()
 		this, &CPlayer::MoveDashLeft);
 
 	CInput::GetInst()->SetCallback<CPlayer>("MoveLeft", KeyState_Up,
-		this, &CPlayer::LeftMoveButtonUp);
+		this, &CPlayer::LeftLeverMoveEnd);
 
 	CInput::GetInst()->SetCallback<CPlayer>("MoveDashLeft", KeyState_Up,
-			this, &CPlayer::LeftMoveButtonUp);
+			this, &CPlayer::LeftDashMoveEnd);
 
 	// Right 
 	CInput::GetInst()->SetCallback<CPlayer>("MoveRight", KeyState_Push,
@@ -71,10 +74,10 @@ void CPlayer::Start()
 		this, &CPlayer::MoveDashRight);
 
 	CInput::GetInst()->SetCallback<CPlayer>("MoveRight", KeyState_Up,
-		this, &CPlayer::RightMoveButtonUp);
+		this, &CPlayer::RightLeverMoveEnd);
 
-		CInput::GetInst()->SetCallback<CPlayer>("MoveDashRight", KeyState_Push, //
-		this, &CPlayer::MoveDashRight);
+	CInput::GetInst()->SetCallback<CPlayer>("MoveDashRight", KeyState_Up, //
+		this, &CPlayer::RightDashMoveEnd);
 
 	CInput::GetInst()->SetCallback<CPlayer>("Fire", KeyState_Down,
 		this, &CPlayer::BulletFire);
@@ -88,6 +91,8 @@ void CPlayer::Start()
 		this, &CPlayer::Skill1);
 
 	CInput::GetInst()->SetCallback<CPlayer>("Jump", KeyState_Down,
+		this, &CPlayer::JumpKey);
+	CInput::GetInst()->SetCallback<CPlayer>("JumpWhileDash", KeyState_Down,
 		this, &CPlayer::JumpKey);
 }
 
@@ -195,14 +200,37 @@ void CPlayer::Update(float DeltaTime)
 	// 최대 움직임 제한
 	if (m_MoveVelocity >= m_MoveMaxVelocity)
 		m_MoveVelocity = m_MoveMaxVelocity;
-	
-	if (!m_IsMoving && m_MoveVelocity > 0.f)
+
+	if (!m_IsLeverMoving)
 	{
 		// 감속 d
-		m_MoveVelocity -= m_LeverMoveAccel * 0.5f;
+		m_LeverVelocity -= m_LeverMoveAccel * 0.5f;
+
+		if (m_LeverVelocity < 0.f)
+		{
+			m_LeverVelocity = 0.f;
+		}
+	}
+
+	if (!m_IsButtonMoving)
+	{
+		// 감속 d
+		m_ButtonVelocity -= m_ButtonMoveAccel * 0.5f;
+
+		if (m_ButtonVelocity < 0.f)
+		{
+			m_ButtonVelocity = 0.f;
+		}
+	}
+
+	
+	if (!m_IsLeverMoving && !m_IsButtonMoving && m_MoveVelocity > 0.f)
+	{
+		// 감속 d
+		m_MoveVelocity = m_LeverVelocity + m_ButtonVelocity;
 
 		// 이동을 멈추면, 오른쪽, 왼쪽 이동 표시를 취소해준다.
-		if (m_MoveVelocity < 0.f)
+		if (m_MoveVelocity <= 0.1f)
 		{
 			if (m_RightMove)
 			{
@@ -322,7 +350,6 @@ void CPlayer::JumpKey(float DeltaTime)
 
 float CPlayer::CalculateLeverMoveSpeed(float DeltaTime)
 {
-	float LeverVelocity = m_LeverVelocity;
 
 	// 오른쪽 이동 중이라면
 	if (m_RightMove)
@@ -330,12 +357,12 @@ float CPlayer::CalculateLeverMoveSpeed(float DeltaTime)
 		// 계속 오른쪽 이동 중이라면
 		if (!m_ToLeftWhenRightMove)
 		{
-			LeverVelocity += m_LeverMoveAccel;
+			m_LeverVelocity += m_LeverMoveAccel;
 		}
 		// 그게 아니라, 이제 왼쪽 이동 중이라면
 		else
 		{
-			LeverVelocity -= m_LeverMoveAccel * 2.f;
+			m_LeverVelocity -= m_LeverMoveAccel * 2.f;
 		}
 	}
 
@@ -345,27 +372,25 @@ float CPlayer::CalculateLeverMoveSpeed(float DeltaTime)
 		// 계속 왼쪽 이동 중이라면
 		if (!m_ToRightWhenLeftMove)
 		{
-			LeverVelocity += m_LeverMoveAccel;
+			m_LeverVelocity += m_LeverMoveAccel;
 		}
 		// 그게 아니라, 이제 오른쪽 이동 중이라면
 		else
 		{
-			LeverVelocity -= m_LeverMoveAccel * 2.f;
+			m_LeverVelocity -= m_LeverMoveAccel * 2.f;
 		}
 	}
 
 	// 최대 치 조절
-	if (LeverVelocity >= m_LeverMaxMoveVelocity)
+	if (m_LeverVelocity >= m_LeverMaxMoveVelocity)
 	{
-		LeverVelocity = m_LeverMaxMoveVelocity;
+		m_LeverVelocity = m_LeverMaxMoveVelocity;
 	}
 
-	if (LeverVelocity < 0.f)
-		LeverVelocity = 0.f;
-
-	m_LeverVelocity = LeverVelocity;
-
-	return LeverVelocity;
+	if (m_LeverVelocity < 0.f)
+		m_LeverVelocity = 0.f;
+	
+	return m_LeverVelocity;
 
 }
 
@@ -407,28 +432,8 @@ float CPlayer::CalculateButtonMoveSpeed(float DeltaTime)
 		m_ButtonVelocity = m_ButtonMaxMoveVelocity;
 	}
 
-	m_MoveVelocity = m_LeverVelocity + m_ButtonVelocity;
-
-	// 최소 치 조절
-	if (m_MoveVelocity <= 0.f)
-	{
-		if (m_RightMove)
-		{
-			m_RightMove = false;
-			// m_ToLeftWhenRightMove = false;
-			m_ToRightWhenLeftMove = false;
-
-		}
-		if (m_LeftMove)
-		{
-			m_LeftMove = false;
-			m_ToLeftWhenRightMove = false;
-		}
-
-		m_MoveVelocity = 0.f;
-		m_LeverVelocity = 0.f;
+	if (m_ButtonVelocity < 0.f)
 		m_ButtonVelocity = 0.f;
-	}
 
 	return m_ButtonVelocity;
 }
@@ -466,43 +471,6 @@ float CPlayer::CalculateTotalMoveSpeed()
 	return m_MoveVelocity;
 }
 
-bool CPlayer::CalculateLeftDir()
-{
-
-	// 오른쪽 버튼을 누르고 있다면 X
-	if (m_RightMovePush)
-	{
-		// 그냥 계속 오른쪽으로 이동
-		return true;;
-	}
-
-	// 이동 중임을 true로 --> 이동 안할 때 자동 감속을 시키기 위함이다.
-	m_IsMoving = true;
-
-	// 왼쪽 버튼을 누르고 있다는 것을 표시한다.aa
-	m_LeftMovePush = true;
-
-	// 그런데 현재 오른쪽으로 이동 중이었다면
-	// 오른쪽으로 가되, 감속을 해야 한다.d aa
-	if (m_RightMove)
-	{
-		m_LeftMove = false;
-		m_ToLeftWhenRightMove = true;
-	}
-	else
-	{
-		m_LeftMove = true;
-		m_ToLeftWhenRightMove = false;
-	}
-
-	return true;
-}
-
-bool CPlayer::CalculateRightDir()
-{
-	return true;
-}
-
 
 void CPlayer::MoveLeft(float DeltaTime)
 {
@@ -514,7 +482,7 @@ void CPlayer::MoveLeft(float DeltaTime)
 	}
 
 	// 이동 중임을 true로 --> 이동 안할 때 자동 감속을 시키기 위함이다.aaaaaaaddddddd
-	m_IsMoving = true;
+	m_IsLeverMoving = true;
 
 	// 왼쪽 버튼을 누르고 있다는 것을 표시한다.aa
 	m_LeftMovePush = true;
@@ -534,6 +502,14 @@ void CPlayer::MoveLeft(float DeltaTime)
 
 	CalculateLeverMoveSpeed(DeltaTime);
 
+	// 만약 Dash를 누르고 있지 않다면
+	if (m_ButtonVelocity > 0.f)
+	{
+		m_ButtonVelocity -= m_ButtonMoveAccel * 2.f;
+		if (m_ButtonVelocity <= 0.f)
+			m_ButtonVelocity = 0.f;
+	}
+
 	CalculateTotalMoveSpeed();
 
 	if (m_RightMove)
@@ -546,12 +522,50 @@ void CPlayer::MoveLeft(float DeltaTime)
 }
 
 void CPlayer::MoveDashLeft(float DeltaTime)
-{}
+{
+	// 오른쪽 버튼을 누르고 있다면 X
+	if (m_RightMovePush)
+	{
+		// 그냥 계속 오른쪽으로 이동
+		return;;
+	}
+
+	// 이동 중임을 true로 --> 이동 안할 때 자동 감속을 시키기 위함이다.
+	m_IsLeverMoving = true;
+	m_IsButtonMoving = true;
+
+	// 왼쪽 버튼을 누르고 있다는 것을 표시한다.aa
+	m_LeftMovePush = true;
+
+	// 그런데 현재 오른쪽으로 이동 중이었다면
+	// 오른쪽으로 가되, 감속을 해야 한다.d aa
+	if (m_RightMove)
+	{
+		m_LeftMove = false;
+		m_ToLeftWhenRightMove = true;
+	}
+	else
+	{
+		m_LeftMove = true;
+		m_ToLeftWhenRightMove = false;
+	}
+
+	CalculateLeverMoveSpeed(DeltaTime);
+
+	CalculateButtonMoveSpeed(DeltaTime);
+
+	CalculateTotalMoveSpeed();
+
+	if (m_RightMove)
+		Move(Vector2(1.f, 0.f), m_MoveVelocity);
+	else
+		Move(Vector2(-1.f, 0.f), m_MoveVelocity);
+
+
+	ChangeAnimation("LucidNunNaRightIdle");
+}
 
 void CPlayer::MoveDashRight(float DeltaTime)
-{}
-
-void CPlayer::MoveRight(float DeltaTime)
 {
 	// 왼쪽 버튼을 누르고 있다면 X
 	if (m_LeftMovePush)
@@ -561,7 +575,8 @@ void CPlayer::MoveRight(float DeltaTime)
 	}
 
 	// 이동 중임을 true로 --> 이동 안할 때 자동 감속을 시키기 위함이다.
-	m_IsMoving = true;
+	m_IsLeverMoving = true;
+	m_IsButtonMoving = true;
 
 	// 오른쪽 이동 중임을 표시한다.
 	m_RightMovePush = true;
@@ -578,8 +593,82 @@ void CPlayer::MoveRight(float DeltaTime)
 		m_ToRightWhenLeftMove = false;
 	}
 
+	CalculateLeverMoveSpeed(DeltaTime);
+
+	CalculateButtonMoveSpeed(DeltaTime);
+
+	CalculateTotalMoveSpeed();
+
+	if (m_RightMove)
+		Move(Vector2(1.f, 0.f), m_MoveVelocity);
+	else
+		Move(Vector2(-1.f, 0.f), m_MoveVelocity);
+
+
+	ChangeAnimation("LucidNunNaRightIdle");
+}
+
+void CPlayer::RightLeverMoveEnd(float DeltaTime)
+{
+	m_RightMovePush = false;
+	MoveInfoReset();
+}
+
+void CPlayer::RightDashMoveEnd(float DeltaTime)
+{
+	m_RightMovePush = false;
+	MoveInfoReset();
+}
+
+void CPlayer::LeftDashMoveEnd(float DeltaTime)
+{
+	m_LeftMovePush = false;
+	MoveInfoReset();
+}
+
+void CPlayer::LeftLeverMoveEnd(float DeltaTime)
+{
+	m_LeftMovePush = false;
+	MoveInfoReset();
+}
+
+
+void CPlayer::MoveRight(float DeltaTime)
+{
+	// 왼쪽 버튼을 누르고 있다면 X
+	if (m_LeftMovePush)
+	{
+		// 계속 왼쪽 이동
+		return;
+	}
+
+	// 이동 중임을 true로 --> 이동 안할 때 자동 감속을 시키기 위함이다.
+	m_IsLeverMoving = true;
+
+	// 오른쪽 이동 중임을 표시한다.
+	m_RightMovePush = true;
+
+	// 왼쪽으로 이미 이동중인 상황이라면
+	if (m_LeftMove)
+	{
+		m_RightMove = false;
+		m_ToRightWhenLeftMove = true;
+	}
+	else // 오른쪽 이동중 표시 
+	{
+		m_RightMove = true;
+		m_ToRightWhenLeftMove = false;
+	}
 
 	CalculateLeverMoveSpeed(DeltaTime);
+
+	// 만약 Dash를 누르고 있지 않다면
+	if (m_ButtonVelocity > 0.f)
+	{
+		m_ButtonVelocity -= m_ButtonMoveAccel * 2.f;
+		if (m_ButtonVelocity <= 0.f)
+			m_ButtonVelocity = 0.f;
+	}
 
 	CalculateTotalMoveSpeed();
 
@@ -592,21 +681,10 @@ void CPlayer::MoveRight(float DeltaTime)
 
 }
 
-void CPlayer::RightMoveButtonUp(float DeltaTime)
-{
-	m_RightMovePush = false;
-	MoveInfoReset();
-}
-
-void CPlayer::LeftMoveButtonUp(float DeltaTime)
-{
-	m_LeftMovePush = false;
-	MoveInfoReset();
-}
-
 void CPlayer::MoveInfoReset()
 {
-	m_IsMoving = false;
+	m_IsButtonMoving = false;
+	m_IsLeverMoving = false;
 	m_ToRightWhenLeftMove = false;
 	m_ToLeftWhenRightMove = false;
 }
