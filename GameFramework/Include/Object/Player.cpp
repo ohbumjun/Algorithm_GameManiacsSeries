@@ -53,8 +53,14 @@ void CPlayer::Start()
 {
 	CCharacter::Start();
 
+	/*
 	CInput::GetInst()->SetCallback<CPlayer>("MoveUp", KeyState_Push,
 		this, &CPlayer::MoveUp);
+		*/
+	CInput::GetInst()->SetCallback<CPlayer>("MoveUp", KeyState_Push,
+		this, &CPlayer::SwimMoveUp);
+	CInput::GetInst()->SetCallback<CPlayer>("MoveUp", KeyState_Up,
+		this, &CPlayer::SwimEnd);
 
 	CInput::GetInst()->SetCallback<CPlayer>("MoveDown", KeyState_Push,
 		this, &CPlayer::MoveDown);
@@ -157,8 +163,8 @@ bool CPlayer::Init()
 	m_CharacterInfo.HPMax = 1000;
 
 	// SetGravityAccel(30.f);
-	// SetPhysicsSimulate(false);
-	SetPhysicsSimulate(true);
+	SetPhysicsSimulate(false);
+	// SetPhysicsSimulate(true);
 	SetJumpVelocity(70.f);
 	SetSideWallCheck(true);
 
@@ -203,6 +209,7 @@ void CPlayer::Update(float DeltaTime)
 		SetOffset(0.f, 0.f);
 
 	PlayerMoveUpdate(DeltaTime);
+	SwimMoveUpdate(DeltaTime);
 
 }
 
@@ -268,14 +275,28 @@ void CPlayer::MoveDown(float DeltaTime)
 void CPlayer::SwimMoveUp(float DeltaTime)
 {
 	//m_Pos.y -= 200.f * DeltaTime;
-	Move(Vector2(0.f, -1.f));
+	m_IsSwimmingUp = true;;
+	Move(Vector2(0.f, -1.f), m_SwimSpeed);
 	ChangeAnimation("LucidNunNaRightWalk");
+}
+
+void CPlayer::SwimEnd(float DeltaTime)
+{
+	m_IsSwimmingUp = false;
 }
 
 void CPlayer::NoSwimGoDown(float DeltaTime)
 {
-	Move(Vector2(0.f, 1.f));
+	Move(Vector2(0.f, 1.f), m_NoSwimDownSpeed);
 	ChangeAnimation("LucidNunNaRightWalk");
+}
+
+void CPlayer::SwimMoveUpdate(float DeltaTime)
+{
+	if (!m_IsSwimmingUp)
+	{
+		Move(Vector2(0.f, 1.f), m_NoSwimDownSpeed);
+	}
 }
 
 

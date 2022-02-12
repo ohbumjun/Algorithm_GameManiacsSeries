@@ -78,7 +78,9 @@ private:
 	void PlayerMoveUpdate(float DeltaTime);
 private : // Swim;
 	void SwimMoveUp(float DeltaTime);
+	void SwimEnd(float DeltaTime);
 	void NoSwimGoDown(float DeltaTime);
+	void SwimMoveUpdate(float DeltaTime);
 private :
 	void MoveUp(float DeltaTime);
 	void MoveDown(float DeltaTime);
