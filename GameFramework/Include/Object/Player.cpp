@@ -623,7 +623,7 @@ void CPlayer::RightDashMoveEnd(float DeltaTime)
 void CPlayer::LeftDashMoveEnd(float DeltaTime)
 {
 	m_LeftMovePush = false;
-	MoveInfoReset();
+	MoveInfoReset();//
 }
 
 void CPlayer::LeftLeverMoveEnd(float DeltaTime)
