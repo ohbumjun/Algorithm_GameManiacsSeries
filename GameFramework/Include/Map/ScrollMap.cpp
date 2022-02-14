@@ -86,6 +86,7 @@ void CScrollMap::Render(HDC hDC)
 
 	if (m_ScrollTexture)
 	{
+		m_Loop = true;
 		if (!m_Loop)
 		{
 			CCamera* Camera = m_Scene->GetCamera();
@@ -127,21 +128,22 @@ void CScrollMap::Render(HDC hDC)
 
 			Vector2	ImagePos = Camera->GetPos() * m_ScrollRatio;
 
-			int	XRatio = (int)(CameraPos.x / Resolution.x);
-			int	YRatio = (int)(CameraPos.y / Resolution.y);
+			// int	XRatio = (int)(CameraPos.x / Resolution.x); 
+			// int	YRatio = (int)(CameraPos.y / Resolution.y); 
 
 			unsigned int	Width = m_ScrollTexture->GetWidth();
 			unsigned int	Height = m_ScrollTexture->GetHeight();
 
 			// 좌상단, 우상단, 좌하단, 우하단 출력
-			unsigned int	WidthRatio = (unsigned int)(CameraPos.x / Width);
-			unsigned int	HeightRatio = (unsigned int)(CameraPos.y / Height);
+			// ex) (int) --> CameraPos.x 가 m_ScrollTexture.Width 를 안넘어갔으면 0이 나오고, 넘어가면 1이 나온다.
+			unsigned int	WidthRatio = (unsigned int)(ImagePos.x / Width);
+			unsigned int	HeightRatio = (unsigned int)(ImagePos.y / Height);
 
-			Vector2	ConvertPos;
-			ConvertPos.x = CameraPos.x - WidthRatio * Width;
-			ConvertPos.y = CameraPos.y - HeightRatio * Height;
+			Vector2	ConvertPos; // Texture 상에서의 Camera Pos를 구할 것이다.
+			ConvertPos.x = ImagePos.x - WidthRatio * Width;
+			ConvertPos.y = ImagePos.y - HeightRatio * Height;
 
-			Vector2	ConvertLeftTopSize;
+			Vector2	ConvertLeftTopSize; // 좌상단 사각형 Size 
 			ConvertLeftTopSize.x = Width - ConvertPos.x;
 			ConvertLeftTopSize.y = Height - ConvertPos.y;
 
@@ -149,14 +151,14 @@ void CScrollMap::Render(HDC hDC)
 			m_ScrollTexture->Render(hDC, Vector2(0.f, 0.f), ConvertPos, ConvertLeftTopSize);
 
 			// 우 상단 출력
-			m_ScrollTexture->Render(hDC, Vector2(ConvertLeftTopSize.x, 0.f), 
-				Vector2(0.f, Height - ConvertLeftTopSize.y), 
-				Vector2(Resolution.x - ConvertLeftTopSize.x, ConvertLeftTopSize.y));
+			m_ScrollTexture->Render(hDC, Vector2(ConvertLeftTopSize.x, 0.f),  // 맨왼쪽 0.f 에서 좌상단 크기만큼 오른쪽 이동한 위치
+				Vector2(0.f, Height - ConvertLeftTopSize.y),  // 이미지 상에서는, 아래로 이동해서 그 지점부터 그리기
+				Vector2(Resolution.x - ConvertLeftTopSize.x, ConvertLeftTopSize.y)); // 좌상단 크기 제외, Texture 크기만큼 그리기
 
 			// 좌 하단 출력
-			m_ScrollTexture->Render(hDC, Vector2(0.f, ConvertLeftTopSize.y),
-				Vector2(ConvertPos.x, 0.f),
-				Vector2(ConvertLeftTopSize.x, Resolution.y - ConvertLeftTopSize.y));
+			m_ScrollTexture->Render(hDC, Vector2(0.f, ConvertLeftTopSize.y), // 좌상단 크기만큼 아래에서 그리기
+				Vector2(ConvertPos.x, 0.f),// 이미지 상에서는 오른쪽 이동한 만큼 
+				Vector2(ConvertLeftTopSize.x, Resolution.y - ConvertLeftTopSize.y)); // 좌상단 가로크기 + (해상도 - 좌상단 Box 높이)
 
 			// 우 하단 출력
 			m_ScrollTexture->Render(hDC, Vector2(ConvertLeftTopSize.x, ConvertLeftTopSize.y),
