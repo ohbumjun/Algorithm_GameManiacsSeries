@@ -97,7 +97,7 @@ private :
 	float CalculateLeverMoveSpeed(float DeltaTime);
 	float CalculateButtonMoveSpeed(float DeltaTime);
 	float CalculateTotalMoveSpeed();
-	void MoveInfoReset();
+	void ResetMoveInfo();
 public:
 	void AttackEnd();
 	void Fire();

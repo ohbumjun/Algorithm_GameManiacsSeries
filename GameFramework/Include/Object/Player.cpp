@@ -303,12 +303,44 @@ void CPlayer::SwimMoveUpdate(float DeltaTime)
 
 void CPlayer::JumpLeft(float DeltaTime)
 {
-	Jump();
+	m_Jump = true;
+	m_IsGround = false;
+
+	// 점프 시작 높이 세팅
+	m_FallStartY = m_Pos.y;
+
+	// FallTime 초기화 
+	m_FallTime = 0.f;
+
+	// 점프에 적용되는 누적가속도 시간도 세팅해둔다.
+	m_JumpAccelAccTime = 0.f;
+
+	m_LeftMove = true;
+	m_RightMove = false;
+
+	m_ToRightWhenLeftMove = false;
+	m_ToLeftWhenRightMove = false;
 }
 
 void CPlayer::JumpRight(float DeltaTime)
 {
-	Jump();
+	m_Jump = true;
+	m_IsGround = false;
+
+	// 점프 시작 높이 세팅
+	m_FallStartY = m_Pos.y;
+
+	// FallTime 초기화 
+	m_FallTime = 0.f;
+
+	// 점프에 적용되는 누적가속도 시간도 세팅해둔다.
+	m_JumpAccelAccTime = 0.f;
+
+	m_LeftMove = false;
+	m_RightMove = true;
+
+	m_ToRightWhenLeftMove = false;
+	m_ToLeftWhenRightMove = false;
 }
 
 
@@ -450,7 +482,7 @@ void CPlayer::JumpKey(float DeltaTime)
 				if (TilePos.y - 0.001f <= RB.y && RB.y <= TilePos.y + 0.001f)
 					continue;
 
-				// 현재 위치 Tile 도 Wall 이고, 오른쪽도 Wall 이라면,
+				// 현재 위치 Tile 도 Wall 이고, 왼쪽도 Wall 이라면,
 				// 그것은, 삼각 점프가 아니게 된다. ( 그냥 Tile이 연속적으로 있는 곳에 대해서는 삼각점프 X)
 				if (x == IndexX)
 				{
@@ -482,28 +514,16 @@ void CPlayer::JumpKey(float DeltaTime)
 	// 그게 아니라면 삼각 점프를 한다.
 	else
 	{
-		// DirX가 0인 경우에 대한 예외 처리가 필요할까 ?
-		m_Jump = true;
-		m_IsGround = false;
-
-		// 점프 시작 높이 세팅
-		m_FallStartY = m_Pos.y;
-
-		// FallTime 초기화 
-		m_FallTime = 0.f;
-
-		// 점프에 적용되는 누적가속도 시간도 세팅해둔다.
-		m_JumpAccelAccTime = 0.f;
-
+		// 현재 움직이는 방향 반대로 움직여야 한다.
 		// 오른쪽
 		if (m_RightMove)
 		{
-			// JumpRight(DeltaTime);
+			JumpLeft(DeltaTime);
 		}
 		// 왼쪽
 		else if (m_LeftMove)
 		{
-			// JumpLeft(DeltaTime);
+			JumpRight(DeltaTime);
 		}
 	}
 }
@@ -777,19 +797,19 @@ void CPlayer::MoveDashRight(float DeltaTime)
 void CPlayer::RightLeverMoveEnd(float DeltaTime)
 {
 	m_RightMovePush = false;
-	MoveInfoReset();
+	ResetMoveInfo();
 }
 
 void CPlayer::RightDashMoveEnd(float DeltaTime)
 {
 	m_RightMovePush = false;
-	MoveInfoReset();
+	ResetMoveInfo();
 }
 
 void CPlayer::LeftDashMoveEnd(float DeltaTime)
 {
 	m_LeftMovePush = false;
-	MoveInfoReset();
+	ResetMoveInfo();
 }
 
 void CPlayer::PlayerMoveUpdate(float DeltaTime)
@@ -858,7 +878,7 @@ void CPlayer::PlayerMoveUpdate(float DeltaTime)
 void CPlayer::LeftLeverMoveEnd(float DeltaTime)
 {
 	m_LeftMovePush = false;
-	MoveInfoReset();
+	ResetMoveInfo();
 }
 
 
@@ -910,7 +930,7 @@ void CPlayer::MoveRight(float DeltaTime)
 
 }
 
-void CPlayer::MoveInfoReset()
+void CPlayer::ResetMoveInfo()
 {
 	m_IsButtonMoving = false;
 	m_IsLeverMoving = false;
