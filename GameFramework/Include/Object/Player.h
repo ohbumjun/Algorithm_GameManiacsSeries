@@ -49,15 +49,20 @@ private : // Swim
 
 private : // Triangle Jump
 	bool m_TriangleJump;
+private : // Jump Down
+	bool m_JumpDown;
 
 public:
 	virtual void SetAttackSpeed(float Speed)
 	{
 		CCharacter::SetAttackSpeed(Speed);
-
 		SetAnimationPlayScale("LucidNunNaRightAttack", Speed);
 	}
 
+	void SetJumpVelocity(float JumpVelocity)
+	{
+		m_JumpVelocity = JumpVelocity;
+	}
 public:
 	virtual void Start();
 	virtual bool Init();
@@ -86,6 +91,9 @@ private : // Swim;
 private : // Jump
 	void TriangleJumpLeft(float DeltaTime);
 	void TriangleJumpRight(float DeltaTime);
+	void JumpKey(float DeltaTime);
+	void JumpDown(float DeltaTime);
+	virtual bool CheckBottomCollision();
 	virtual void SetObjectLand();
 private :
 	void MoveUp(float DeltaTime);
@@ -95,7 +103,6 @@ private :
 	void Pause(float DeltaTime);
 	void Resume(float DeltaTime);
 	void Skill1(float DeltaTime);
-	void JumpKey(float DeltaTime);
 private :
 	float CalculateLeverMoveSpeed(float DeltaTime);
 	float CalculateButtonMoveSpeed(float DeltaTime);

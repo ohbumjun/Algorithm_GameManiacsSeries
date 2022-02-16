@@ -23,6 +23,8 @@ CGameObject::CGameObject()	:
 	m_FallStartY(0.f),
 	m_Jump(false),
 	m_JumpVelocity(0.f),
+	m_FallVelocity(0.f),
+	m_FallVelocityMax(1000.f),
 	m_GravityAccel(10.f),
 	m_LifeTime(0.f),
 	m_FloorCheck(false),
@@ -649,7 +651,7 @@ void CGameObject::Update(float DeltaTime)
 		// 0 = -0.5GA^2 VA - y
 		// (-b +- 루트(b^2 - 4ac) / 2a
 		float	Velocity = 0.f;
-
+		 
 		m_JumpAccelAccTime += m_JumpAccel;
 
 		if (m_Jump)
@@ -657,8 +659,14 @@ void CGameObject::Update(float DeltaTime)
 
 		float	SaveY = m_Pos.y;
 
+		m_FallVelocity = 0.5f * GRAVITY * m_FallTime * m_FallTime * m_JumpAccel;
+
+		// 최대 낙하 속도를 조절한다.
+		if (Velocity - m_FallVelocity < m_FallVelocityMax * -1.f)
+			m_FallVelocity = Velocity + m_FallVelocityMax;
+
 		// m_Pos.y = m_FallStartY - (Velocity - 0.5f * GRAVITY * m_FallTime * m_FallTime);
-		m_Pos.y = m_FallStartY - (Velocity - 0.5f * GRAVITY * m_FallTime * m_FallTime * m_JumpAccel);
+		m_Pos.y = m_FallStartY - (Velocity - m_FallVelocity);
 	}
 
 
@@ -728,8 +736,6 @@ void CGameObject::PostUpdate(float DeltaTime)
 		}
 	}
 
-
-
 	{
 		auto	iter = m_WidgetComponentList.begin();
 		auto	iterEnd = m_WidgetComponentList.end();
@@ -745,8 +751,6 @@ void CGameObject::PostUpdate(float DeltaTime)
 
 	// 바닥 타일 체크하기 
 	// if (m_PhysicsSimulate && m_Pos.y - m_PrevPos.y > 0.f)
-
-
 	// ">=" 이어야 하는 이유는, 바닥 타일이 있는 곳에 있다가
 	// 걸어서 떨어지려고 할때, 여전히 m_Pos.y 와 m_PrevPos.y는 같은 상태
 	// 이 상태에서도 떨어짐을 적용 시키기 위함이다.

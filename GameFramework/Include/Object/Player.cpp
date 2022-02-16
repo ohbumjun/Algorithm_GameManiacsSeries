@@ -18,7 +18,8 @@ CPlayer::CPlayer()	:
 	m_LeftMove(false),
 	m_ToRightWhenLeftMove(false),
 	m_LeftMovePush(false),
-	m_TriangleJump(false)
+	m_TriangleJump(false),
+	m_JumpDown(false)
 {
 	m_LeverMoveAccel = 1.f;
 	m_ButtonMoveAccel = 1.5f;
@@ -28,7 +29,8 @@ CPlayer::CPlayer()	:
 	m_ButtonMaxMoveVelocity = 200.f;
 	m_MoveMaxVelocity = m_LeverMaxMoveVelocity + m_ButtonMaxMoveVelocity;
 
-	m_DashTwiceLimitTime = 0.2f;
+	// 이단 대쉬
+	// m_DashTwiceLimitTime = 0.2f;
 
 	m_IsLeverMoving = false;
 	m_IsButtonMoving = false;
@@ -38,7 +40,7 @@ CPlayer::CPlayer()	:
 	m_NoSwimDownSpeed = 100.;
 
 
-	m_JumpAccel = 1.5f;
+	m_JumpAccel = 1.1f;
 }
 
 CPlayer::CPlayer(const CPlayer& obj)	:
@@ -65,8 +67,10 @@ void CPlayer::Start()
 	CInput::GetInst()->SetCallback<CPlayer>("MoveUp", KeyState_Up,
 		this, &CPlayer::SwimEnd);
 
+	// CInput::GetInst()->SetCallback<CPlayer>("MoveDown", KeyState_Push,
+		// this, &CPlayer::MoveDown);
 	CInput::GetInst()->SetCallback<CPlayer>("MoveDown", KeyState_Push,
-		this, &CPlayer::MoveDown);
+		this, &CPlayer::JumpDown);
 
 	CInput::GetInst()->SetCallback<CPlayer>("MoveLeft", KeyState_Push,
 		this, &CPlayer::MoveLeft);
@@ -353,6 +357,31 @@ void CPlayer::SetObjectLand()
 	CCharacter::SetObjectLand();
 
 	m_TriangleJump = false;
+}
+
+void CPlayer::JumpDown(float DeltaTime)
+{
+	// 공중에서는 X
+	if (m_IsGround)
+	{
+		// 떨어지게 하기 
+		m_IsGround = false;
+
+		m_FallTime = 0.f;
+		m_FallStartY = m_Pos.y;
+
+		// Down Jump 중임 표시
+		m_JumpDown = true;
+	}
+
+}
+
+bool CPlayer::CheckBottomCollision()
+{
+	if (m_JumpDown)
+		return false;
+
+	return CCharacter::CheckBottomCollision();
 }
 
 
@@ -776,7 +805,6 @@ void CPlayer::MoveDashLeft(float DeltaTime)
 	else
 		Move(Vector2(-1.f, 0.f), m_MoveVelocity);
 
-
 	ChangeAnimation("LucidNunNaRightIdle");
 }
 
@@ -827,7 +855,6 @@ void CPlayer::MoveDashRight(float DeltaTime)
 		Move(Vector2(1.f, 0.f), m_MoveVelocity);
 	else
 		Move(Vector2(-1.f, 0.f), m_MoveVelocity);
-
 
 	ChangeAnimation("LucidNunNaRightIdle");
 }

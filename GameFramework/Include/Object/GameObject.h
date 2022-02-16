@@ -36,6 +36,9 @@ protected:
 	EObject_Type	m_ObjType;
 	bool			m_DamageEnable;
 	std::list<CSharedPtr<CWidgetComponent>>	m_WidgetComponentList;
+protected :
+	float         m_FallVelocityMax; // 너무 빠르게 내려가면, 바닥 충돌이 잘 안먹힐 수 있다.
+	float         m_FallVelocity;
 	bool			m_PhysicsSimulate;
 	float			m_GravityAccel;
 	bool			m_IsGround;
@@ -257,7 +260,7 @@ public:
 		unsigned char g, unsigned char b, int Index = 0);
 protected:
 	bool CheckSideCollision();
-	bool CheckBottomCollision();
+	virtual bool CheckBottomCollision();
 	virtual void SetObjectLand();
 public:
 	virtual void Start();
