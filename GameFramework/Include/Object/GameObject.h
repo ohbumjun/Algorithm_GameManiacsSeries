@@ -257,6 +257,8 @@ public:
 		unsigned char g, unsigned char b, int Index = 0);
 protected:
 	bool CheckSideCollision();
+	bool CheckBottomCollision();
+	virtual void SetObjectLand();
 public:
 	virtual void Start();
 	virtual bool Init();

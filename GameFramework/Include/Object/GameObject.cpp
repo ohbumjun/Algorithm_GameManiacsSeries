@@ -487,6 +487,121 @@ bool CGameObject::CheckSideCollision()
 	return SideCollision;
 }
 
+bool CGameObject::CheckBottomCollision()
+{
+	if (m_PhysicsSimulate && m_Pos.y - m_PrevPos.y >= 0.f)
+	{
+		CTileMap* TileMap = m_Scene->GetTileMap();
+
+		// 현재 위치, 이동 위치 사이의 이동 범위에 놓인 타일 전부에 대해
+		// 조사할 것이다.
+		// 여기는 위, 아래 범위만 고려할 것이다.
+		// Side Collision 에서는 LT, RB을 고려할 것이다.
+		float	PrevBottom = m_PrevPos.y + (1.f - m_Pivot.y) * m_Size.y;
+		float	CurBottom = m_Pos.y + (1.f - m_Pivot.y) * m_Size.y;
+		float	PrevLeft = m_PrevPos.x - m_Pivot.x * m_Size.x;
+		float	CurLeft = m_Pos.x - m_Pivot.x * m_Size.x;
+		float	PrevRight = PrevLeft + m_Size.x;
+		float	CurRight = CurLeft + m_Size.x;
+
+		// 오른쪽 혹은 왼쪽 이동에 따라서
+		// 크고 작음이 바뀔 수도 있다.
+		float	resultLeft = PrevLeft < CurLeft ? PrevLeft : CurLeft;
+		float	resultRight = PrevRight > CurRight ? PrevRight : CurRight;
+		// 더 작은 것 
+		float	resultTop = PrevBottom < CurBottom ? PrevBottom : CurBottom;
+		// 더 큰 것
+		float	resultBottom = PrevBottom > CurBottom ? PrevBottom : CurBottom;
+
+		// 이전 위치와 현재 위치의 타일 인덱스를 구해온다.
+		int	LeftIndex, TopIndex, RightIndex, BottomIndex;
+
+		LeftIndex = TileMap->GetOriginTileIndexX(resultLeft);
+		TopIndex = TileMap->GetOriginTileIndexY(resultTop);
+		RightIndex = TileMap->GetOriginTileIndexX(resultRight);
+		BottomIndex = TileMap->GetOriginTileIndexY(resultBottom);
+
+		if (LeftIndex < 0)
+			LeftIndex = 0;
+
+		if (TopIndex < 0)
+			TopIndex = 0;
+
+		if (RightIndex >= TileMap->GetTileCountX())
+			RightIndex = TileMap->GetTileCountX() - 1;
+
+		if (BottomIndex >= TileMap->GetTileCountY())
+			BottomIndex = TileMap->GetTileCountY() - 1;
+
+		bool	Check = false;
+
+		// 위에서 아래로 반복한다.
+		for (int i = TopIndex; i <= BottomIndex; ++i)
+		{
+			for (int j = LeftIndex; j <= RightIndex; ++j)
+			{
+				// 이전위치의 Bottom이 타일의 Top보다 클 경우 무시한다.
+				// 즉, 내가 점프하는데 그 위에 Tile이 존재하는 것
+				// 바닥체크는 내려갈 때만 체크하기 위함이다.
+				if (TileMap->GetTile(j, i)->GetPos().y < PrevBottom)
+					continue;
+
+				// 못 가는 곳이라면 (즉, 바닥에 닿는다면 )
+				if (TileMap->GetTile(j, i)->GetTileOption() == ETileOption::Wall)
+				{
+					// 땅에 닿음 
+					Check = true;
+
+					SetObjectLand();
+
+					// FallTime 초기화 
+					// m_FallTime = 0.f;
+
+					// 해당 Tile의 Y값 + Pivot 등을 고려한 위치를 Pos를 세팅해준다.
+					// m_Pos.y = TileMap->GetTile(j, i)->GetPos().y - (1.f - m_Pivot.y) * m_Size.y;
+					m_Pos.y = TileMap->GetTile(j, i)->GetPos().y;
+
+					// 바닥 도달 + Jump 세팅 
+					// m_IsGround = true;
+					// m_Jump = false;
+
+					// 점프에 적용되는 누적가속도 시간도 세팅해둔다.
+					// m_JumpAccelAccTime = 0.f;
+
+					break;
+				}
+			}
+
+			if (Check)
+				break;
+		}
+
+		// 만약에 바닥에 닿지 않았다면
+		// 이제 막 다시 떨어지기 시작하는 부분 
+		if (!Check)
+		{
+			// FallTime, FallStartY 부분을 초기화 해두기 
+			if (m_IsGround)
+			{
+				m_FallTime = 0.f;
+				m_FallStartY = m_Pos.y;
+			}
+
+			m_IsGround = false;
+		}
+	}
+
+	return true;
+}
+
+void CGameObject::SetObjectLand()
+{
+	m_FallTime = 0.f;
+	m_IsGround = true;
+	m_Jump = false;
+	m_JumpAccelAccTime = 0.f;
+}
+
 void CGameObject::Start()
 {
 	m_Start = true;
@@ -635,105 +750,8 @@ void CGameObject::PostUpdate(float DeltaTime)
 	// ">=" 이어야 하는 이유는, 바닥 타일이 있는 곳에 있다가
 	// 걸어서 떨어지려고 할때, 여전히 m_Pos.y 와 m_PrevPos.y는 같은 상태
 	// 이 상태에서도 떨어짐을 적용 시키기 위함이다.
-	if (m_PhysicsSimulate && m_Pos.y - m_PrevPos.y >= 0.f)
-	{
-		CTileMap* TileMap = m_Scene->GetTileMap();
-
-		// 현재 위치, 이동 위치 사이의 이동 범위에 놓인 타일 전부에 대해
-		// 조사할 것이다.
-		// 여기는 위, 아래 범위만 고려할 것이다.
-		// Side Collision 에서는 LT, RB을 고려할 것이다.
-		float	PrevBottom = m_PrevPos.y + (1.f - m_Pivot.y) * m_Size.y;
-		float	CurBottom = m_Pos.y + (1.f - m_Pivot.y) * m_Size.y;
-		float	PrevLeft = m_PrevPos.x - m_Pivot.x * m_Size.x;
-		float	CurLeft = m_Pos.x - m_Pivot.x * m_Size.x;
-		float	PrevRight = PrevLeft + m_Size.x;
-		float	CurRight = CurLeft + m_Size.x;
-
-		// 오른쪽 혹은 왼쪽 이동에 따라서
-		// 크고 작음이 바뀔 수도 있다.
-		float	resultLeft = PrevLeft < CurLeft ? PrevLeft : CurLeft;
-		float	resultRight = PrevRight > CurRight ? PrevRight : CurRight;
-		// 더 작은 것 
-		float	resultTop = PrevBottom < CurBottom ? PrevBottom : CurBottom;
-		// 더 큰 것
-		float	resultBottom = PrevBottom > CurBottom ? PrevBottom : CurBottom;
-
-		// 이전 위치와 현재 위치의 타일 인덱스를 구해온다.
-		int	LeftIndex, TopIndex, RightIndex, BottomIndex;
-
-		LeftIndex = TileMap->GetOriginTileIndexX(resultLeft);
-		TopIndex = TileMap->GetOriginTileIndexY(resultTop);
-		RightIndex = TileMap->GetOriginTileIndexX(resultRight);
-		BottomIndex = TileMap->GetOriginTileIndexY(resultBottom);
-
-		if (LeftIndex < 0)
-			LeftIndex = 0;
-
-		if (TopIndex < 0)
-			TopIndex = 0;
-
-		if (RightIndex >= TileMap->GetTileCountX())
-			RightIndex = TileMap->GetTileCountX() - 1;
-
-		if (BottomIndex >= TileMap->GetTileCountY())
-			BottomIndex = TileMap->GetTileCountY() - 1;
-
-		bool	Check = false;
-
-		// 위에서 아래로 반복한다.
-		for (int i = TopIndex; i <= BottomIndex; ++i)
-		{
-			for (int j = LeftIndex; j <= RightIndex; ++j)
-			{
-				// 이전위치의 Bottom이 타일의 Top보다 클 경우 무시한다.
-				// 즉, 내가 점프하는데 그 위에 Tile이 존재하는 것
-				// 바닥체크는 내려갈 때만 체크하기 위함이다.
-				if (TileMap->GetTile(j, i)->GetPos().y < PrevBottom)
-					continue;
-
-				// 못 가는 곳이라면 (즉, 바닥에 닿는다면 )
-				if (TileMap->GetTile(j, i)->GetTileOption() == ETileOption::Wall)
-				{
-					// 땅에 닿음 
-					Check = true;
-
-					// FallTime 초기화 
-					m_FallTime = 0.f;
-
-					// 해당 Tile의 Y값 + Pivot 등을 고려한 위치를 Pos를 세팅해준다.
-					// m_Pos.y = TileMap->GetTile(j, i)->GetPos().y - (1.f - m_Pivot.y) * m_Size.y;
-					m_Pos.y = TileMap->GetTile(j, i)->GetPos().y;
-
-					// 바닥 도달 + Jump 세팅 
-					m_IsGround = true;
-					m_Jump = false;
-
-					// 점프에 적용되는 누적가속도 시간도 세팅해둔다.
-					m_JumpAccelAccTime = 0.f;
-
-					break;
-				}
-			}
-
-			if (Check)
-				break;
-		}
-
-		// 만약에 바닥에 닿지 않았다면
-		// 이제 막 다시 떨어지기 시작하는 부분 
-		if (!Check)
-		{
-			// FallTime, FallStartY 부분을 초기화 해두기 
-			if (m_IsGround)
-			{
-				m_FallTime = 0.f;
-				m_FallStartY = m_Pos.y;
-			}
-
-			m_IsGround = false;
-		}
-	}
+	CheckBottomCollision();
+	
 }
 
 void CGameObject::Collision(float DeltaTime)

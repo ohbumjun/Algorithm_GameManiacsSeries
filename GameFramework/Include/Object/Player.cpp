@@ -17,7 +17,8 @@ CPlayer::CPlayer()	:
 	m_RightMovePush(false),
 	m_LeftMove(false),
 	m_ToRightWhenLeftMove(false),
-	m_LeftMovePush(false)
+	m_LeftMovePush(false),
+	m_TriangleJump(false)
 {
 	m_LeverMoveAccel = 1.f;
 	m_ButtonMoveAccel = 1.5f;
@@ -301,7 +302,7 @@ void CPlayer::SwimMoveUpdate(float DeltaTime)
 	}
 }
 
-void CPlayer::JumpLeft(float DeltaTime)
+void CPlayer::TriangleJumpLeft(float DeltaTime)
 {
 	m_Jump = true;
 	m_IsGround = false;
@@ -314,6 +315,8 @@ void CPlayer::JumpLeft(float DeltaTime)
 
 	// 점프에 적용되는 누적가속도 시간도 세팅해둔다.
 	m_JumpAccelAccTime = 0.f;
+
+	m_TriangleJump = true;
 
 	m_LeftMove = true;
 	m_RightMove = false;
@@ -322,7 +325,7 @@ void CPlayer::JumpLeft(float DeltaTime)
 	m_ToLeftWhenRightMove = false;
 }
 
-void CPlayer::JumpRight(float DeltaTime)
+void CPlayer::TriangleJumpRight(float DeltaTime)
 {
 	m_Jump = true;
 	m_IsGround = false;
@@ -336,11 +339,20 @@ void CPlayer::JumpRight(float DeltaTime)
 	// 점프에 적용되는 누적가속도 시간도 세팅해둔다.
 	m_JumpAccelAccTime = 0.f;
 
+	m_TriangleJump = true;
+
 	m_LeftMove = false;
 	m_RightMove = true;
 
 	m_ToRightWhenLeftMove = false;
 	m_ToLeftWhenRightMove = false;
+}
+
+void CPlayer::SetObjectLand()
+{
+	CCharacter::SetObjectLand();
+
+	m_TriangleJump = false;
 }
 
 
@@ -518,12 +530,12 @@ void CPlayer::JumpKey(float DeltaTime)
 		// 오른쪽
 		if (m_RightMove)
 		{
-			JumpLeft(DeltaTime);
+			TriangleJumpLeft(DeltaTime);
 		}
 		// 왼쪽
 		else if (m_LeftMove)
 		{
-			JumpRight(DeltaTime);
+			TriangleJumpRight(DeltaTime);
 		}
 	}
 }
@@ -660,6 +672,15 @@ float CPlayer::CalculateTotalMoveSpeed()
 
 void CPlayer::MoveLeft(float DeltaTime)
 {
+	if (m_TriangleJump)
+	{
+		if (m_RightMove)
+			Move(Vector2(1.f, 0.f), m_MoveVelocity);
+		else
+			Move(Vector2(-1.f, 0.f), m_MoveVelocity);
+		return;
+	}
+
 	// 오른쪽 버튼을 누르고 있다면 X
 	if (m_RightMovePush)
 	{
@@ -709,6 +730,14 @@ void CPlayer::MoveLeft(float DeltaTime)
 
 void CPlayer::MoveDashLeft(float DeltaTime)
 {
+	if (m_TriangleJump)
+	{
+		if (m_RightMove)
+			Move(Vector2(1.f, 0.f), m_MoveVelocity);
+		else
+			Move(Vector2(-1.f, 0.f), m_MoveVelocity);
+		return;
+	}
 	// 오른쪽 버튼을 누르고 있다면 X
 	if (m_RightMovePush)
 	{
@@ -753,6 +782,15 @@ void CPlayer::MoveDashLeft(float DeltaTime)
 
 void CPlayer::MoveDashRight(float DeltaTime)
 {
+	if (m_TriangleJump)
+	{
+		if (m_RightMove)
+			Move(Vector2(1.f, 0.f), m_MoveVelocity);
+		else
+			Move(Vector2(-1.f, 0.f), m_MoveVelocity);
+		return;
+	}
+
 	// 왼쪽 버튼을 누르고 있다면 X
 	if (m_LeftMovePush)
 	{
@@ -884,6 +922,15 @@ void CPlayer::LeftLeverMoveEnd(float DeltaTime)
 
 void CPlayer::MoveRight(float DeltaTime)
 {
+	if (m_TriangleJump)
+	{
+		if (m_RightMove)
+			Move(Vector2(1.f, 0.f), m_MoveVelocity);
+		else
+			Move(Vector2(-1.f, 0.f), m_MoveVelocity);
+		return;
+	}
+
 	// 왼쪽 버튼을 누르고 있다면 X
 	if (m_LeftMovePush)
 	{
