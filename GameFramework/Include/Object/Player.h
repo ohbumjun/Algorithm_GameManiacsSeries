@@ -49,9 +49,14 @@ private : // Swim
 
 private : // Triangle Jump
 	bool m_TriangleJump;
+
 private : // Jump Down
 	bool m_JumpDown;
 	float m_JumpDownDist;
+
+private : // Fly
+	bool m_IsFlying;
+	float m_FlySpeed;
 
 public:
 	virtual void SetAttackSpeed(float Speed)
@@ -89,6 +94,8 @@ private : // Swim;
 	void SwimEnd(float DeltaTime);
 	void NoSwimGoDown(float DeltaTime);
 	void SwimMoveUpdate(float DeltaTime);
+private :
+	void FlyAfterJump(float DeltaTime);
 private : // Jump
 	void TriangleJumpLeft(float DeltaTime);
 	void TriangleJumpRight(float DeltaTime);
@@ -99,6 +106,7 @@ private : // Jump
 	virtual void SetObjectLand();
 private :
 	void MoveUp(float DeltaTime);
+	void MoveUpEnd(float DeltaTime);
 	void MoveDown(float DeltaTime);
 private :
 	void BulletFire(float DeltaTime);

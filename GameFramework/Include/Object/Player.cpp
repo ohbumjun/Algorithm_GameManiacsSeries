@@ -20,6 +20,7 @@ CPlayer::CPlayer()	:
 	m_LeftMovePush(false),
 	m_TriangleJump(false),
 	m_JumpDown(false),
+	m_IsFlying(false),
 	m_JumpDownDist(0.f)
 {
 	m_LeverMoveAccel = 1.f;
@@ -40,7 +41,10 @@ CPlayer::CPlayer()	:
 	m_SwimSpeed = 200.f;
 	m_NoSwimDownSpeed = 100.;
 
+	// Fly 속도
+	m_FlySpeed = 200.f;
 
+	// 점프에 붙는 가속도
 	m_JumpAccel = 1.1f;
 }
 
@@ -63,10 +67,14 @@ void CPlayer::Start()
 	CInput::GetInst()->SetCallback<CPlayer>("MoveUp", KeyState_Push,
 		this, &CPlayer::MoveUp);
 		*/
+	// CInput::GetInst()->SetCallback<CPlayer>("MoveUp", KeyState_Push,
+	//	this, &CPlayer::SwimMoveUp);
 	CInput::GetInst()->SetCallback<CPlayer>("MoveUp", KeyState_Push,
-		this, &CPlayer::SwimMoveUp);
+		this, &CPlayer::MoveUp);
+
 	CInput::GetInst()->SetCallback<CPlayer>("MoveUp", KeyState_Up,
-		this, &CPlayer::SwimEnd);
+		this, &CPlayer::MoveUpEnd);
+	
 
 	// CInput::GetInst()->SetCallback<CPlayer>("MoveDown", KeyState_Push,
 		// this, &CPlayer::MoveDown);
@@ -271,8 +279,26 @@ float CPlayer::SetDamage(float Damage)
 void CPlayer::MoveUp(float DeltaTime)
 {
 	//m_Pos.y -= 200.f * DeltaTime;
-	Move(Vector2(0.f, -1.f));
-	ChangeAnimation("LucidNunNaRightWalk");
+	// Move(Vector2(0.f, -1.f));
+	// ChangeAnimation("LucidNunNaRightWalk");
+
+
+	// 1) FlyAfter Jump
+	FlyAfterJump(DeltaTime);
+
+	// 2) 혹은 SwimMoveUp
+	// SwimMoveUp(DeltaTime);
+}
+
+void CPlayer::MoveUpEnd(float DeltaTime)
+{
+	if (m_IsFlying)
+	{
+		// 땅에 닿은 상태라면 m_IsFlying을 False로 해서
+		// 다시 Jump 이후 날게 세팅한다.
+		if (m_IsGround)
+			m_IsFlying = false;
+	}
 }
 
 void CPlayer::MoveDown(float DeltaTime)
@@ -285,6 +311,7 @@ void CPlayer::MoveDown(float DeltaTime)
 void CPlayer::SwimMoveUp(float DeltaTime)
 {
 	//m_Pos.y -= 200.f * DeltaTime;
+	
 	m_IsSwimmingUp = true;;
 	Move(Vector2(0.f, -1.f), m_SwimSpeed);
 	ChangeAnimation("LucidNunNaRightWalk");
@@ -306,6 +333,31 @@ void CPlayer::SwimMoveUpdate(float DeltaTime)
 	if (!m_IsSwimmingUp)
 	{
 		Move(Vector2(0.f, 1.f), m_NoSwimDownSpeed);
+	}
+}
+
+void CPlayer::FlyAfterJump(float DeltaTime)
+{
+
+	// 일단 한 번 뛴 상태에서 날아야 한다.
+	if (m_Jump)
+	{
+		m_IsFlying = true;
+
+		// 중력 적용 방지 
+		m_Jump = false;
+		m_IsGround = true;
+	}
+
+	// 나는 중이라면 계속 날게 세팅한다.
+	if (m_IsFlying)
+	{
+		Move(Vector2(0.f, -1.f),m_FlySpeed);
+		ChangeAnimation("LucidNunNaRightWalk");
+
+		// 중력 적용 방지 
+		m_Jump = false;
+		m_IsGround = true;
 	}
 }
 
@@ -395,7 +447,15 @@ bool CPlayer::CheckBottomCollision()
 	if (m_JumpDown)
 		return false;
 
-	return CCharacter::CheckBottomCollision();
+	bool BottomCollision = CCharacter::CheckBottomCollision();
+
+	if (BottomCollision)
+	{
+			// m_TriangleJump = false;
+		// m_IsFlying = false;
+	}
+
+	return true;
 }
 
 
@@ -919,7 +979,6 @@ void CPlayer::PlayerMoveUpdate(float DeltaTime)
 			m_ButtonVelocity = 0.f;
 		}
 	}
-
 
 	if (!m_IsLeverMoving && !m_IsButtonMoving && m_MoveVelocity > 0.f)
 	{

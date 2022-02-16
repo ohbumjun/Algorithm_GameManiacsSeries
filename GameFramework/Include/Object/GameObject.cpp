@@ -591,9 +591,9 @@ bool CGameObject::CheckBottomCollision()
 
 			m_IsGround = false;
 		}
-	}
 
-	return true;
+		return Check;
+	}
 }
 
 void CGameObject::SetObjectLand()
