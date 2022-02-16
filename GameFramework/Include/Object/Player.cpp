@@ -486,7 +486,7 @@ void CPlayer::JumpKey(float DeltaTime)
 				// 그것은, 삼각 점프가 아니게 된다. ( 그냥 Tile이 연속적으로 있는 곳에 대해서는 삼각점프 X)
 				if (x == IndexX)
 				{
-					if (TileMap->GetTile(y * TileMap->GetTileCountX() + (x + 1))->GetTileOption() ==
+					if (TileMap->GetTile(y * TileMap->GetTileCountX() + IndexXRight)->GetTileOption() ==
 						ETileOption::Wall)
 						continue;
 				}
@@ -507,12 +507,12 @@ void CPlayer::JumpKey(float DeltaTime)
 	}
 
 	// SideCollision이 있었다면 단순 Jump 한다.
-	if (!SideCollision)
+	if (m_IsGround)
 	{
 		Jump();
 	}
 	// 그게 아니라면 삼각 점프를 한다.
-	else
+	else if (SideCollision)
 	{
 		// 현재 움직이는 방향 반대로 움직여야 한다.
 		// 오른쪽
