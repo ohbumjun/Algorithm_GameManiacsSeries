@@ -51,6 +51,7 @@ private : // Triangle Jump
 	bool m_TriangleJump;
 private : // Jump Down
 	bool m_JumpDown;
+	float m_JumpDownDist;
 
 public:
 	virtual void SetAttackSpeed(float Speed)
@@ -93,6 +94,7 @@ private : // Jump
 	void TriangleJumpRight(float DeltaTime);
 	void JumpKey(float DeltaTime);
 	void JumpDown(float DeltaTime);
+	void JumpDownDistUpdate(float DeltaTime);
 	virtual bool CheckBottomCollision();
 	virtual void SetObjectLand();
 private :

@@ -19,7 +19,8 @@ CPlayer::CPlayer()	:
 	m_ToRightWhenLeftMove(false),
 	m_LeftMovePush(false),
 	m_TriangleJump(false),
-	m_JumpDown(false)
+	m_JumpDown(false),
+	m_JumpDownDist(0.f)
 {
 	m_LeverMoveAccel = 1.f;
 	m_ButtonMoveAccel = 1.5f;
@@ -218,6 +219,8 @@ void CPlayer::Update(float DeltaTime)
 	PlayerMoveUpdate(DeltaTime);
 	// SwimMoveUpdate(DeltaTime);
 
+	JumpDownDistUpdate(DeltaTime);
+
 }
 
 void CPlayer::PostUpdate(float DeltaTime)
@@ -374,6 +377,17 @@ void CPlayer::JumpDown(float DeltaTime)
 		m_JumpDown = true;
 	}
 
+}
+
+void CPlayer::JumpDownDistUpdate(float DeltaTime)
+{
+	if (m_JumpDown)
+	{
+		m_JumpDownDist = m_Pos.y - m_FallStartY;
+
+		if (m_JumpDownDist > m_Size.y)
+			m_JumpDown = false;
+	}
 }
 
 bool CPlayer::CheckBottomCollision()
