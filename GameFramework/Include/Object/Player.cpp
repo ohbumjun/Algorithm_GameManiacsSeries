@@ -357,11 +357,14 @@ void CPlayer::JumpKey(float DeltaTime)
 		int IndexF         = -1;
 
 		int IndexXRight = IndexX + 1;
+		int IndexXLeft = IndexX - 1;
 
 		if (IndexX > TileMap->GetTileCountX() - 1)
 			IndexX = TileMap->GetTileCountX() - 1;
 		if (IndexXRight > TileMap->GetTileCountX() - 1)
 			IndexXRight = TileMap->GetTileCountX() - 1;
+		if (IndexXLeft < 0)
+			IndexXLeft = 0;
 
 		for (int y = TopIndexY; y <= BottomIndexY; y++)
 		{
@@ -373,8 +376,33 @@ void CPlayer::JumpKey(float DeltaTime)
 				if (TileMap->GetTile(IndexF)->GetTileOption() !=
 					ETileOption::Wall)
 					continue;
+
 				//if (!TileMap->GetTile(IndexF)->GetSideCollision())
 				//	continue;
+
+				Vector2	TilePos = TileMap->GetTile(IndexF)->GetPos();
+				Vector2	TileSize = TileMap->GetTile(IndexF)->GetSize();
+
+				// 화면에 딱 붙어있을 때는 무시한다.
+				if (TilePos.y - 0.001f <= RB.y && RB.y <= TilePos.y + 0.001f)
+					continue;
+
+				// 현재 위치 Tile 도 Wall 이고, 오른쪽도 Wall 이라면,
+				// 그것은, 삼각 점프가 아니게 된다. ( 그냥 Tile이 연속적으로 있는 곳에 대해서는 삼각점프 X)
+				if (x == IndexX)
+				{
+					if (TileMap->GetTile(y * TileMap->GetTileCountX() + IndexXLeft)->GetTileOption() ==
+						ETileOption::Wall)
+						continue;
+				}
+
+				if (x == IndexXRight)
+				{
+					if (TileMap->GetTile(y * TileMap->GetTileCountX() + IndexX)->GetTileOption() ==
+						ETileOption::Wall)
+						continue;
+				}
+
 				SideCollision = true;
 				break;
 			}
@@ -392,14 +420,16 @@ void CPlayer::JumpKey(float DeltaTime)
 		int IndexF = -1;
 
 		int IndexXLeft = IndexX - 1;
+		int IndexXRight = IndexX +1;
 
 		if (IndexX < 0)
 			IndexX = 0;
 		if (IndexXLeft < 0)
 			IndexXLeft = 0;
+		if (IndexXRight >= TileMap->GetTileCountX() - 1)
+			IndexXRight = TileMap->GetTileCountX() - 1;
 
 		// 오른쪽 2개의 타일을 조사한다.
-
 		for (int y = TopIndexY; y <= BottomIndexY; y++)
 		{
 			for (int x = IndexX; x >= IndexXLeft; x--)
@@ -409,8 +439,33 @@ void CPlayer::JumpKey(float DeltaTime)
 				if (TileMap->GetTile(IndexF)->GetTileOption() !=
 					ETileOption::Wall)
 					continue;
+
 				//if (!TileMap->GetTile(IndexF)->GetSideCollision())
 				//	continue;
+
+				Vector2	TilePos  = TileMap->GetTile(IndexF)->GetPos();
+				Vector2	TileSize = TileMap->GetTile(IndexF)->GetSize();
+
+				// 화면에 딱 붙어있을 때는 무시한다.
+				if (TilePos.y - 0.001f <= RB.y && RB.y <= TilePos.y + 0.001f)
+					continue;
+
+				// 현재 위치 Tile 도 Wall 이고, 오른쪽도 Wall 이라면,
+				// 그것은, 삼각 점프가 아니게 된다. ( 그냥 Tile이 연속적으로 있는 곳에 대해서는 삼각점프 X)
+				if (x == IndexX)
+				{
+					if (TileMap->GetTile(y * TileMap->GetTileCountX() + (x + 1))->GetTileOption() ==
+						ETileOption::Wall)
+						continue;
+				}
+
+				if (x == IndexXLeft)
+				{
+					if (TileMap->GetTile(y * TileMap->GetTileCountX() + IndexX)->GetTileOption() ==
+						ETileOption::Wall)
+						continue;
+				}
+
 				SideCollision = true;
 				break;
 			}
@@ -443,12 +498,12 @@ void CPlayer::JumpKey(float DeltaTime)
 		// 오른쪽
 		if (m_RightMove)
 		{
-			JumpRight(DeltaTime);
+			// JumpRight(DeltaTime);
 		}
 		// 왼쪽
 		else if (m_LeftMove)
 		{
-			JumpLeft(DeltaTime);
+			// JumpLeft(DeltaTime);
 		}
 	}
 }

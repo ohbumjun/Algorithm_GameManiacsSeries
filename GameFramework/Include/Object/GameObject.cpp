@@ -626,7 +626,6 @@ void CGameObject::PostUpdate(float DeltaTime)
 	}
 
 	// Side Collision
-
 	CheckSideCollision();
 
 	// 바닥 타일 체크하기 
