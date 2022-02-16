@@ -36,7 +36,8 @@ CPlayer::CPlayer()	:
 	m_SwimSpeed = 200.f;
 	m_NoSwimDownSpeed = 100.;
 
-	
+
+	m_JumpAccel = 1.5f;
 }
 
 CPlayer::CPlayer(const CPlayer& obj)	:
@@ -300,6 +301,16 @@ void CPlayer::SwimMoveUpdate(float DeltaTime)
 	}
 }
 
+void CPlayer::JumpLeft(float DeltaTime)
+{
+	Jump();
+}
+
+void CPlayer::JumpRight(float DeltaTime)
+{
+	Jump();
+}
+
 
 void CPlayer::BulletFire(float DeltaTime)
 {
@@ -329,13 +340,124 @@ void CPlayer::Skill1(float DeltaTime)
 
 void CPlayer::JumpKey(float DeltaTime)
 {
-	Jump();
+	// 삼각 충돌 적용하기 
+	bool SideCollision = false;
+
+	CTileMap* TileMap = m_Scene->GetTileMap();
+
+	Vector2 LT  = m_Pos - m_Pivot * m_Size;
+	Vector2 RB = LT + m_Size;
+
+	// 오른쪽이면, 오른쪽 한칸 타일
+	if (m_RightMove)
+	{
+		int IndexX         = TileMap->GetOriginTileIndexX(RB.x);
+		int TopIndexY         = TileMap->GetOriginTileIndexY(LT.y);
+		int BottomIndexY         = TileMap->GetOriginTileIndexY(RB.y);
+		int IndexF         = -1;
+
+		int IndexXRight = IndexX + 1;
+
+		if (IndexX > TileMap->GetTileCountX() - 1)
+			IndexX = TileMap->GetTileCountX() - 1;
+		if (IndexXRight > TileMap->GetTileCountX() - 1)
+			IndexXRight = TileMap->GetTileCountX() - 1;
+
+		for (int y = TopIndexY; y <= BottomIndexY; y++)
+		{
+			// 오른쪽 2개의 타일을 조사한다.
+			for (int x = IndexX; x <= IndexXRight; x++)
+			{
+				IndexF = y * TileMap->GetTileCountX() + x;
+
+				if (TileMap->GetTile(IndexF)->GetTileOption() !=
+					ETileOption::Wall)
+					continue;
+				//if (!TileMap->GetTile(IndexF)->GetSideCollision())
+				//	continue;
+				SideCollision = true;
+				break;
+			}
+			if (SideCollision)
+				break;
+		}
+	}
+
+	// 왼쪽 이면, 왼쪽 한칸 타일
+	else if (m_LeftMove)
+	{
+		int IndexX = TileMap->GetOriginTileIndexX(LT.x);
+		int TopIndexY = TileMap->GetOriginTileIndexY(LT.y);
+		int BottomIndexY = TileMap->GetOriginTileIndexY(RB.y);
+		int IndexF = -1;
+
+		int IndexXLeft = IndexX - 1;
+
+		if (IndexX < 0)
+			IndexX = 0;
+		if (IndexXLeft < 0)
+			IndexXLeft = 0;
+
+		// 오른쪽 2개의 타일을 조사한다.
+
+		for (int y = TopIndexY; y <= BottomIndexY; y++)
+		{
+			for (int x = IndexX; x >= IndexXLeft; x--)
+			{
+				IndexF = y * TileMap->GetTileCountX() + x;
+
+				if (TileMap->GetTile(IndexF)->GetTileOption() !=
+					ETileOption::Wall)
+					continue;
+				//if (!TileMap->GetTile(IndexF)->GetSideCollision())
+				//	continue;
+				SideCollision = true;
+				break;
+			}
+			if (SideCollision)
+				break;
+		}
+	}
+
+	// SideCollision이 있었다면 단순 Jump 한다.
+	if (!SideCollision)
+	{
+		Jump();
+	}
+	// 그게 아니라면 삼각 점프를 한다.
+	else
+	{
+		// DirX가 0인 경우에 대한 예외 처리가 필요할까 ?
+		m_Jump = true;
+		m_IsGround = false;
+
+		// 점프 시작 높이 세팅
+		m_FallStartY = m_Pos.y;
+
+		// FallTime 초기화 
+		m_FallTime = 0.f;
+
+		// 점프에 적용되는 누적가속도 시간도 세팅해둔다.
+		m_JumpAccelAccTime = 0.f;
+
+		// 오른쪽
+		if (m_RightMove)
+		{
+			JumpRight(DeltaTime);
+		}
+		// 왼쪽
+		else if (m_LeftMove)
+		{
+			JumpLeft(DeltaTime);
+		}
+	}
 }
 
 float CPlayer::CalculateLeverMoveSpeed(float DeltaTime)
 {
-	if (!m_IsGround)
-		return m_LeverVelocity;
+	// 점프 중이어도 적용 
+	// if (!m_IsGround)
+	//	return m_LeverVelocity;
 		
 	// 오른쪽 이동 중이라면
 	if (m_RightMove)
@@ -470,7 +592,7 @@ void CPlayer::MoveLeft(float DeltaTime)
 		return ;;
 	}
 
-	// 이동 중임을 true로 --> 이동 안할 때 자동 감속을 시키기 위함이다.aaaaaaaddddddd
+	// 이동 중임을 true로 --> 이동 안할 때 자동 감속을 시키기 위함이다.
 	m_IsLeverMoving = true;
 
 	// 왼쪽 버튼을 누르고 있다는 것을 표시한다.aa

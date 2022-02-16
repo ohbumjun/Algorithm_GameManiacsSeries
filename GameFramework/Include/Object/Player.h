@@ -81,6 +81,9 @@ private : // Swim;
 	void SwimEnd(float DeltaTime);
 	void NoSwimGoDown(float DeltaTime);
 	void SwimMoveUpdate(float DeltaTime);
+private : // Jump
+	void JumpLeft(float DeltaTime);
+	void JumpRight(float DeltaTime);
 private :
 	void MoveUp(float DeltaTime);
 	void MoveDown(float DeltaTime);

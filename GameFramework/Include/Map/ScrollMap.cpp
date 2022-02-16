@@ -6,7 +6,7 @@
 
 CScrollMap::CScrollMap()	:
 	m_ScrollRatio(1.f, 1.f),
-	m_Loop(false)
+	m_Loop(true)
 {
 }
 
@@ -86,7 +86,6 @@ void CScrollMap::Render(HDC hDC)
 
 	if (m_ScrollTexture)
 	{
-		m_Loop = true;
 		if (!m_Loop)
 		{
 			CCamera* Camera = m_Scene->GetCamera();

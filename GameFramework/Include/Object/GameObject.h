@@ -43,7 +43,7 @@ protected:
 	float			m_FallStartY;
 	bool			m_FloorCheck;
 	bool			m_SideWallCheck;
-private : // Jum;
+protected : // Jump;
 	bool			m_Jump;
 	float			m_JumpVelocity;
 	float          m_JumpAccel;
@@ -255,7 +255,8 @@ public:
 		const std::string& PathName = TEXTURE_PATH);
 	void SetTextureColorKey(unsigned char r,
 		unsigned char g, unsigned char b, int Index = 0);
-
+protected:
+	bool CheckSideCollision();
 public:
 	virtual void Start();
 	virtual bool Init();
@@ -266,7 +267,6 @@ public:
 	virtual void Render(HDC hDC);
 	virtual CGameObject* Clone();
 	virtual float SetDamage(float Damage);
-
 
 public:
 	template <typename T>
