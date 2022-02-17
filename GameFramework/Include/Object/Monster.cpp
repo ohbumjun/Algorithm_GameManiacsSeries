@@ -8,10 +8,13 @@ CMonster::CMonster()	:
 	m_FireTime(0.f),
 	m_FireTimeMax(1.f),
 	m_AI(EMonsterAI::Idle),
-	m_DetectDistance(500.f),
-	m_AttackDistance(200.f),
+	m_DetectDistance(400.f),
+	m_AttackDistance(300.f),
 	m_AttackEnable(false),
-	m_Skill1Enable(false)
+	m_Skill1Enable(false),
+	m_Hit(false),
+	m_HitTime(1.f),
+	m_HitTimeMax(1.f)
 {
 	m_Dir.x = 0.f;
 	m_Dir.y = 1.f;
@@ -54,6 +57,7 @@ bool CMonster::Init()
 	Body->SetExtent(82.f, 73.f);
 	Body->SetOffset(0.f, -36.5f);
 	Body->SetCollisionProfile("Monster");
+	Body->SetCollisionBeginFunction(this, &CMonster::CollisionBeginCallback);
 
 	m_CharacterInfo.HP = 1000;
 	m_CharacterInfo.HPMax = 1000;
@@ -73,7 +77,7 @@ void CMonster::Update(float DeltaTime)
 	// 플레이어와의 거리를 구한다.
 	float	Dist = Distance(Player->GetPos(), m_Pos);
 
-	if (Dist <= m_DetectDistance)
+	if (Dist <= m_DetectDistance && !m_Hit)
 	{
 		if (Dist <= m_AttackDistance)
 		{
@@ -167,6 +171,8 @@ void CMonster::Update(float DeltaTime)
 		MessageBox(0, TEXT("스킬이 너무 강력하다."), TEXT("뻥이지롱"), MB_OK);
 		break;
 	}
+
+	HitTimeUpdate(DeltaTime);
 }
 
 void CMonster::PostUpdate(float DeltaTime)
@@ -194,6 +200,26 @@ float CMonster::SetDamage(float Damage)
 	Damage = CCharacter::SetDamage(Damage);
 
 	return Damage;
+}
+
+void CMonster::HitTimeUpdate(float DeltaTime)
+{
+	if (m_Hit && m_HitTime >= 0.f)
+	{
+		Move(m_HitDir, m_MoveSpeed);
+		m_HitTime -= DeltaTime;
+		if (m_HitTime < 0.f)
+		{
+			m_Hit = false;
+			m_HitTime = 0.f;
+		}
+	}
+}
+
+void CMonster::CollisionBeginCallback(CCollider* Src, CCollider* Dest, float DeltaTime)
+{
+	m_Hit = true;
+	m_HitTime = m_HitTimeMax;
 }
 
 void CMonster::AIIdle(float DeltaTime)

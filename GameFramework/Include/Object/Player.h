@@ -102,6 +102,7 @@ private : // Jump
 	void JumpKey(float DeltaTime);
 	void JumpDown(float DeltaTime);
 	void JumpDownDistUpdate(float DeltaTime);
+	void JumpDownAttack(CCollider* Src, CCollider* Dest, float DeltaTime);
 	virtual bool CheckBottomCollision();
 	virtual void SetObjectLand();
 private :

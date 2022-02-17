@@ -15,7 +15,7 @@ stl : standard template library¿Ã¥Ÿ.
 #include <crtdbg.h>
 #include <functional>
 #include "resource.h"
-
+#include <typeinfo>
 #include "SharedPtr.h"
 #include "Math.h"
 #include "Flag.h"

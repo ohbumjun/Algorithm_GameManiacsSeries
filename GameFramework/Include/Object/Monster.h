@@ -20,7 +20,16 @@ private:
 	float	m_AttackDistance;
 	bool	m_AttackEnable;
 	bool	m_Skill1Enable;
-
+private :
+	bool m_Hit;
+	float m_HitTime;
+	float m_HitTimeMax;
+	Vector2 m_HitDir;
+public:
+	void SetHitDir(const Vector2& Dir)
+	{
+		m_HitDir = Dir;
+	}
 public:
 	virtual void Start();
 	virtual bool Init();
@@ -31,6 +40,9 @@ public:
 	virtual CMonster* Clone();
 	virtual float SetDamage(float Damage);
 
+private :
+	void HitTimeUpdate(float DeltaTime);
+	void CollisionBeginCallback(CCollider* Src, CCollider* Dest, float DeltaTime);
 protected:
 	void AIIdle(float DeltaTime);
 	void AITrace(float DeltaTime);

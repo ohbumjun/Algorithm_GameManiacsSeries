@@ -1,6 +1,10 @@
 
 #include "Player.h"
+#include "Monster.h"
+#include "EffectHit.h"
+#include "DamageFont.h"
 #include "../Scene/Scene.h"
+#include "../Scene/SceneResource.h"
 #include "../Input.h"
 #include "../GameManager.h"
 #include "../Collision/ColliderBox.h"
@@ -157,6 +161,7 @@ bool CPlayer::Init()
 	Body->SetExtent(80.f, 45.f);
 	Body->SetOffset(0.f, -22.5f);
 	Body->SetCollisionProfile("Player");
+	Body->SetCollisionBeginFunction(this, &CPlayer::JumpDownAttack);
 
 	m_HPBarWidget = CreateWidgetComponent("HPBarWidget");
 
@@ -442,6 +447,48 @@ void CPlayer::JumpDownDistUpdate(float DeltaTime)
 	}
 }
 
+void CPlayer::JumpDownAttack(CCollider* Src, CCollider* Dest, float DeltaTime)
+{
+	// 낙하중 
+	if (m_Pos.y > m_PrevPos.y && !m_IsGround)
+	{
+		try {
+			CMonster* Owner = dynamic_cast<CMonster*>(Dest->GetOwner());
+
+			if (Owner) // Good Cast
+			{
+ 				CEffectHit* Hit = m_Scene->CreateObject<CEffectHit>("HitEffect", "HitEffect",
+					m_Pos, Vector2(178.f, 164.f));
+
+				m_Scene->GetSceneResource()->SoundPlay("Fire");
+
+				CDamageFont* DamageFont = m_Scene->CreateObject<CDamageFont>("DamageFont",
+					m_Pos);
+
+				// 해당 방향으로 튕겨나가게 하기
+				float DirX = m_Pos.x - m_PrevPos.x;
+
+				// 왼쪽으로 가고 있었음
+				if (DirX <= 0)
+				{
+					Owner->SetHitDir(Vector2(-1.f, 0.f));
+				}
+				else
+				{
+					Owner->SetHitDir(Vector2(1.f, 0.f));
+				}
+			}
+			else // bad_cast
+			{
+				CMonster* Owner = (CMonster*)Dest->GetOwner();
+			}
+		}
+		catch (std::bad_cast b) {
+		}
+		
+	}
+}
+
 bool CPlayer::CheckBottomCollision()
 {
 	if (m_JumpDown)
@@ -451,7 +498,7 @@ bool CPlayer::CheckBottomCollision()
 
 	if (BottomCollision)
 	{
-			// m_TriangleJump = false;
+		// m_TriangleJump = false;
 		// m_IsFlying = false;
 	}
 
